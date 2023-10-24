@@ -563,7 +563,7 @@ BEGIN {
 }
 
 # * runs:
-# ~$ awk -v ARRLIB_DEBUG=1 -v NOHANGUP=1 -f test/arrlib_test.awk
+# ~$ awk -v ARRLIB_DEBUG=1 -v NOHANGUP=1 -f arrlib_test.awk
 # ~$ seq 30 | column | awk -f arrlib_test.awk
 # * list functions:
 # awk '$0 ~ /^function [^_]/ {print gensub(/^(.*?)(\(.*)/, "\\1", "g", $2)}' ~/local/share/awk/arrlib.awk
