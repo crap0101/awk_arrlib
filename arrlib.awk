@@ -1,5 +1,6 @@
 
 @include "awkpot"
+# https://github.com/crap0101/awkpot
 
 @namespace "arrlib"
 
@@ -151,7 +152,7 @@ function print_idx(arr, outfile, depth, from,    i, idx) {
 	close(outfile)
 }
 
-function _sprintf_idx_rec(arr, separator, depth, from,    idx, out, s) {
+function _sprintf_idx_rec(arr, separator, depth, from,    idx, out, s, empty_val) {
     # Private function to print on string the indeces of $arr
     # joined by $separator, optionally from the $from level
     # until the $depth level of subarrays.
@@ -160,6 +161,7 @@ function _sprintf_idx_rec(arr, separator, depth, from,    idx, out, s) {
     if (depth == 0)
 	return ""
     out = ""
+    empty_val = 0
     for (idx in arr) {
 	if (awk::isarray(arr[idx])) {
 	    if (from > 0) {
@@ -186,10 +188,17 @@ function _sprintf_idx_rec(arr, separator, depth, from,    idx, out, s) {
 	    }
 	} else {
 	    if (from <= 0) {
-		if (out)
+		if (! out) {
+		    if (empty_val)
+			out = out separator idx
+		    else
+			out = out idx
+		    if (idx == "")
+			empty_val = 1
+		    else
+			empty_val = 0
+		} else
 		    out = out separator idx
-		else
-		    out = out idx # force str
 	    }
 	}
     }
@@ -251,7 +260,7 @@ function print_val(arr, outfile, depth, from,    i, idx) {
 	close(outfile)
 }
 
-function _sprintf_val_rec(arr, separator, depth, from,    idx, out) {
+function _sprintf_val_rec(arr, separator, depth, from,    idx, out, empty_val) {
     # Private function to print on string the values of the
     # (possibly nested) array $arr, joined with $separator, optionally
     # from the $from level until the $depth level of subarrays.
@@ -261,6 +270,7 @@ function _sprintf_val_rec(arr, separator, depth, from,    idx, out) {
     if (depth == 0)
 	return ""
     out = ""
+    empy_val = 0
     for (idx in arr) {
 	if (awk::isarray(arr[idx])) {
 	    if (out) {
@@ -271,10 +281,17 @@ function _sprintf_val_rec(arr, separator, depth, from,    idx, out) {
 		out = _sprintf_val_rec(arr[idx], separator, depth-1, from-1)
 	} else {
 	    if (from <= 0) {
-		if (out)
+		if (! out) {
+		    if (empty_val)
+			out = out separator arr[idx]
+		    else
+			out = out arr[idx]
+		    if (arr[idx] == "")
+			empty_val = 1
+		    else
+			empty_val = 0
+		} else
 		    out = out separator arr[idx]
-		else
-		    out = out arr[idx] # force str
 	    }
 	}
     }

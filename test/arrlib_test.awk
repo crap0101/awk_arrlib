@@ -1,7 +1,9 @@
 
 @include "arrlib.awk"
 @include "awkpot"
+# https://github.com/crap0101/awkpot
 @include "testing.awk"
+# https://github.com/crap0101/laundry_basket/blob/master/testing.awk
 
 @load "arrayfuncs"
 
@@ -134,7 +136,7 @@ BEGIN {
     # sprintf_val
     _t3 = awkpot::get_tempfile()
     arrlib::print_idx(ba, _t3)
-    awkpot::read_file(_t3, bf)
+    awkpot::read_file_arr(_t3, bf)
     deep_flat_array_idx(ba, bbg)
     asort(bbg)
     bs = arrlib::sprintf_val(bbg, ":")
@@ -146,7 +148,58 @@ BEGIN {
     testing::assert_equal(bs_over, bfs, 1, "> bs_over == bfs")
     testing::assert_equal(bs, bs_neg, 1, "> bs == bs_neg")
     
+    # check empty values
+    _pv = awkpot::set_sort_order("@val_str_asc")
+    va[0] = ""
+    va[1] = 1
+    va[2] = ""
+    va[3] = 2
+    va[4] = ""
+    testing::assert_equal(arrlib::sprintf_val(va, ":"), ":::1:2", 1, "> sprintf_val (empty values) [@val_str_asc]")
+    awkpot::set_sort_order("@ind_num_asc")
+    testing::assert_equal(arrlib::sprintf_val(va, ":"), ":1::2:", 1, "> sprintf_val (empty values) [@ind_num_asc]")
+    printf "val <%s>\n", arrlib::sprintf_val(va, ":")
+    va[0]=0
+    va[4]=4
+    print "* set va[0]=0; va[4]=4"
+    testing::assert_equal(arrlib::sprintf_val(va, ":"), "0:1::2:4", 1, "> sprintf_val")
+    print "* set va[2]=\"due\""
+    va[2]="due"
+    testing::assert_equal(arrlib::sprintf_val(va, ":"), "0:1:due:2:4", 1, "> sprintf_val")
+    va[5][0]=""
+    va[5][1]=11
+    va[5][2]=""
+    va[5][3]
+    va[6][0]=""
+    va[6][1]=""
+    testing::assert_equal(arrlib::sprintf_val(va, ":"), "0:1:due:2:4::11::::", 1, "> sprintf_val (subarrays)")
+    delete va
+
     # sprintf_idx
+    va[0] = ""
+    va[1] = 1
+    va[2] = ""
+    va[3] = 2
+    va[4] = ""
+
+    testing::assert_equal(arrlib::sprintf_idx(va, ":"), "0:1:2:3:4", 1, "> sprintf_idx")
+    testing::assert_equal(arrlib::array_length(va), 5, 1, "(length) va == 5")
+    va[""]="null"
+    testing::assert_true(("" in va), 1, "> null in va?")
+    testing::assert_equal(arrlib::sprintf_idx(va, ":"), ":0:1:2:3:4", 1, "> sprintf_idx (empty index)")
+    testing::assert_equal(arrlib::array_length(va), 6, 1, "(length) va == 6")
+    va[5][0]=""
+    va[5][1]=11
+    va[5][2]=""
+    va[5][3]
+    va[6][0]=""
+    va[6][1]=""
+    testing::assert_equal(arrlib::sprintf_idx(va, ":"), ":0:1:2:3:4:5:0:1:2:3:6:0:1", 1, "> sprintf_idx (subarrays)")
+    delete va[""]
+
+    awkpot::set_sort_order(_pv)
+    delete va
+    
     bs1 = arrlib::sprintf_idx(bbg, ":")
     bs2 = ""
     for (i=arrlib::array_length(bbg); i>1; i--)
@@ -163,14 +216,14 @@ BEGIN {
     bs = arrlib::array_sprintf(ba, 2)
     printf("%s",bs) >> _t2
     close(_t2)
-    awkpot::read_file(_t1, ba_read)
-    awkpot::read_file(_t2, bs_read)
+    awkpot::read_file_arr(_t1, ba_read)
+    awkpot::read_file_arr(_t2, bs_read)
     testing::assert_true(arrlib::equals(ba_read, bs_read), 1, "ba_read == bs_read")
     
     # sprintf_val
     _t3 = awkpot::get_tempfile()
     arrlib::print_val(ba, _t3, 2)
-    awkpot::read_file(_t3, ba_read)
+    awkpot::read_file_arr(_t3, ba_read)
     print "* ba_read:";arrlib::array_print(ba_read)
     asort(ba_read)
     ba_str = arrlib::sprintf_val(ba_read, ":")
@@ -229,7 +282,7 @@ BEGIN {
 
     _t1 = awkpot::get_tempfile()
     arrlib::print_idx(a, _t1)
-    awkpot::read_file(_t1, _c)
+    awkpot::read_file_arr(_t1, _c)
     awk::asort(_c)
     deep_flat_array_idx(a, _a)
     awk::asort(_a)
@@ -242,7 +295,7 @@ BEGIN {
 
     _t1 = awkpot::get_tempfile()
     arrlib::print_val(a, _t1)
-    awkpot::read_file(_t1, _d)
+    awkpot::read_file_arr(_t1, _d)
     awk::asort(_d)
     deep_flat_array(a, _b)    
     awk::asort(_b)
