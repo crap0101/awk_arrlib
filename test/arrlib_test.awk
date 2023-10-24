@@ -21,6 +21,14 @@ function _rec(arr,    i) {
 
 
 BEGIN {
+    if (awk::ARRLIB_DEBUG) {
+	dprint = "awkpot::dprint_real"
+	# to set dprint in awkpot functions also (defaults to dprint_fake)
+	awkpot::set_dprint(dprint)
+    } else {
+	dprint = "awkpot::dprint_fake"
+    }
+
     _stdout = "" # set false for array_print to print on stdout
     # "arr" array with subarrays:
     for (i=0;i<5;i++)
@@ -70,32 +78,31 @@ BEGIN {
     testing::start_test_report()
 	
     # TEST arrlib::array_copy && sorting order
-    print "* array_copy(arr, b)"
+    @dprint("* array_copy(arr, b)")
     arrlib::array_copy(arr, b)
-    print "* arr:"; arrlib::array_print(arr)
-    print "* b:"; arrlib::array_print(b)
+    @dprint("* arr:") && arrlib::array_print(arr)
+    @dprint("* b:") && arrlib::array_print(b)
     testing::assert_true(arrlib::equals(arr, b), 1, "> arrlib::equals(arr, b)")
+    @dprint("* arrlib::array_copy(b, x)")
     arrlib::array_copy(b, x)
-    print "* arrlib::array_copy(b, x)"
-    print "* x:"; arrlib::array_print(x)
+    @dprint("* x:") && arrlib::array_print(x)
     testing::assert_true(arrlib::equals(x, b), 1, "> arrlib::equals(x, b)")
-    print "* _prev_order = awkpot::set_sort_order(\"@ind_num_desc\")"
+    @dprint("* _prev_order = awkpot::set_sort_order(\"@ind_num_desc\")")
     _prev_order = awkpot::set_sort_order("@ind_num_desc")
-    print "* array_print(b) ..."; arrlib::array_print(b)
-    print "* arrlib::array_copy(b, b1) ..."
+    @dprint("* array_print(b)") && arrlib::array_print(b)
+    @dprint("* arrlib::array_copy(b, b1)")
     arrlib::array_copy(b, b1)
-    print "* b1:"; arrlib::array_print(b1)
-    print "* awkpot::set_sort_order(_prev_order)"
+    @dprint("* b1:") && arrlib::array_print(b1)
+    @dprint("* awkpot::set_sort_order(_prev_order)")
     awkpot::set_sort_order(_prev_order)
     testing::assert_true(arrlib::equals(b1, b), 1, "> arrlib::equals(b1, b)")
-    print "* b1:"; arrlib::array_print(b1)
-    print "* b1 (array_sprintf):"
-    print arrlib::array_sprintf(b1)
+    @dprint("* b1:") && arrlib::array_print(b1)
+    @dprint(sprintf("* b1 (array_sprintf): <%s>", arrlib::array_sprintf(b1)))
 
-    print "* array_copy(bg, c, 3, 1)"
-    print "* array_sprintf(bg, 3, 1)"
+    @dprint("* array_copy(bg, c, 3, 1)")
     arrlib::array_copy(bg, c, 3, 1)
     bgstr = arrlib::array_sprintf(bg, 3, 1)
+    @dprint(sprintf("* array_sprintf(bg, 3, 1): <%s>", bgstr))
     cs = arrlib::array_sprintf(c)
     testing::assert_equal(cs, bgstr, 1, "> cs == bgstr")
 
@@ -103,32 +110,31 @@ BEGIN {
     bgstr1 = arrlib::array_sprintf(bg, 1)
     ds = arrlib::array_sprintf(d)
     testing::assert_equal(ds, bgstr1, 1, "> ds == bgs1")
-
+    
     arrlib::array_copy(bg, c)
     testing::assert_true(arrlib::equals(bg, c), 1, "> arrlib::equals(bg, c)")
 
-    delete b1; delete c; delete d; delete x
-
-    #################
+    delete b1; delete c; delete d; delete x;
+				   
+				   #################
     # TEST printing
     # array_sprintf, sort order, ...
     x["x"]="xx";x[0]=1;x[1]="zero";x[2]=3
-    print "* x:"; arrlib::array_print(x)
-    print "* array_print(x, _stdout, -1, -1, \"@ind_num_desc\"):"
-    arrlib::array_print(x, _stdout, -1, -1, "@ind_num_desc")
+    @dprint("* x:") && arrlib::array_print(x)
+    @dprint("* array_print(x, _stdout, -1, -1, \"@ind_num_desc\"):") && arrlib::array_print(x, _stdout, -1, -1, "@ind_num_desc")
     arrlib::array_copy(b, b1)
     b1s = arrlib::array_sprintf(b1)
     testing::assert_equal(arrlib::array_sprintf(b), b1s, 1,
 			  "> arrlib::array_sprintf(b) == arrlib::array_sprintf(b1)")
 
-    print "* _prev_order = set_sort_order(\"@ind_num_desc\")"
+    @dprint("* _prev_order = set_sort_order(\"@ind_num_desc\")")
     _prev_order = awkpot::set_sort_order("@ind_num_desc")
-    print "* arrlib::array_print(ba):"; arrlib::array_print(ba)
-    print "* arrlib::array_copy(ba, bc)"
+    @dprint("* arrlib::array_print(ba):") && arrlib::array_print(ba)
+    @dprint("* arrlib::array_copy(ba, bc)")
     arrlib::array_copy(ba, bc)
-    print "* arrlib::array_print(bc)"; arrlib::array_print(bc)
-    print "* bs = arrlib::array_sprintf(ba):"
+    @dprint("* arrlib::array_print(bc)") && arrlib::array_print(bc)
     bsa = arrlib::array_sprintf(ba)
+    @dprint(sprintf("* bsa = arrlib::array_sprintf(ba): <%s>", bsa))
     bsc = arrlib::array_sprintf(bc)
     testing::assert_equal(bsa, bsc, 1, "> bsa == bsc")
     delete b1; delete bc
@@ -158,12 +164,12 @@ BEGIN {
     testing::assert_equal(arrlib::sprintf_val(va, ":"), ":::1:2", 1, "> sprintf_val (empty values) [@val_str_asc]")
     awkpot::set_sort_order("@ind_num_asc")
     testing::assert_equal(arrlib::sprintf_val(va, ":"), ":1::2:", 1, "> sprintf_val (empty values) [@ind_num_asc]")
-    printf "val <%s>\n", arrlib::sprintf_val(va, ":")
+    @dprint(sprintf("* vals <%s>\n", arrlib::sprintf_val(va, ":")))
     va[0]=0
     va[4]=4
-    print "* set va[0]=0; va[4]=4"
+    @dprint("* set va[0]=0; va[4]=4")
     testing::assert_equal(arrlib::sprintf_val(va, ":"), "0:1::2:4", 1, "> sprintf_val")
-    print "* set va[2]=\"due\""
+    @dprint("* set va[2]=\"due\"")
     va[2]="due"
     testing::assert_equal(arrlib::sprintf_val(va, ":"), "0:1:due:2:4", 1, "> sprintf_val")
     va[5][0]=""
@@ -211,38 +217,38 @@ BEGIN {
     # with depth
     _t1 = awkpot::get_tempfile()
     _t2 = awkpot::get_tempfile()
-    printf "* arrlib::array_print(ba, %s)\n", _t1
+    @dprint(sprintf("* arrlib::array_print(ba, %s)", _t1))
     arrlib::array_print(ba, _t1, 2)
     bs = arrlib::array_sprintf(ba, 2)
     printf("%s",bs) >> _t2
     close(_t2)
     awkpot::read_file_arr(_t1, ba_read)
     awkpot::read_file_arr(_t2, bs_read)
-    testing::assert_true(arrlib::equals(ba_read, bs_read), 1, "ba_read == bs_read")
+    testing::assert_true(arrlib::equals(ba_read, bs_read), 1, "> ba_read == bs_read")
     
     # sprintf_val
     _t3 = awkpot::get_tempfile()
     arrlib::print_val(ba, _t3, 2)
     awkpot::read_file_arr(_t3, ba_read)
-    print "* ba_read:";arrlib::array_print(ba_read)
+    @dprint("* ba_read:") && arrlib::array_print(ba_read)
     asort(ba_read)
     ba_str = arrlib::sprintf_val(ba_read, ":")
     arrlib::array_copy(ba, ba_pcopy, 2)
-    print "* ba_pcopy:";arrlib::array_print(ba_pcopy)
+    @dprint("* ba_pcopy:") && arrlib::array_print(ba_pcopy)
 
     #arrlib::array_print
     deep_flat_array(ba_pcopy, ba_flat)
-    print "* ba_flat:";arrlib::array_print(ba_flat)
+    @dprint("* ba_flat:") && arrlib::array_print(ba_flat)
     asort(ba_flat)
     ba_flat_str = arrlib::sprintf_val(ba_flat, ":")
-    print "* ba_str:", ba_str
-    print "* ba_flat_str:", ba_flat_str
+    @dprint(sprintf("* ba_str: <%s>", ba_str))
+    @dprint(sprintf("* ba_flat_str: <%s>", ba_flat_str))
     testing::assert_equal(ba_str, ba_flat_str, 1, "> ba_str == ba_flat_str")
 
     # sprintf_idx, sprintf_val (slices)
-    print "* bg:";arrlib::array_print(bg)
+    @dprint("* bg:") && arrlib::array_print(bg)
     bgstr = arrlib::sprintf_idx(bg, ":", 2)
-    print "* bgstr:", bgstr
+    @dprint(sprintf("* bgstr: <%s>", bgstr))
     split(bgstr, bgs, ":")
     asort(bgs)
     test_bgs = "A:0:1:2:B:C:D:1:2:C1:E"
@@ -263,7 +269,7 @@ BEGIN {
     delete ba_read;delete ba_pcopy;delete ba_flat; delete ba_flat2
 
     bastr = arrlib::sprintf_idx(bg, ":", 3, 1)
-    print "* bastr:", bastr
+    @dprint(sprintf("* bastr: <%s>", bastr))
     split(bastr, bas, ":")
     asort(bas)
     test_bas = "1:2:C1:E:0:2:3:F"
@@ -286,10 +292,8 @@ BEGIN {
     awk::asort(_c)
     deep_flat_array_idx(a, _a)
     awk::asort(_a)
-    print "* indexes from _a:"
-    print arrlib::sprintf_val(_a, ":")
-    print "* indexes from _c:"
-    print arrlib::sprintf_val(_c, ":")
+    @dprint(sprintf("* indexes from _a: <%s>", arrlib::sprintf_val(_a, ":")))
+    @dprint(sprintf("* indexes from _c: <%s>", arrlib::sprintf_val(_c, ":")))
     testing::assert_equal(arrlib::sprintf_val(_a, ":"), arrlib::sprintf_val(_c, ":"),
 			  1, "> (idx from _a) == (idx from _c)")
 
@@ -299,19 +303,17 @@ BEGIN {
     awk::asort(_d)
     deep_flat_array(a, _b)    
     awk::asort(_b)
-    print "* indexes from _b:"
-    print arrlib::sprintf_val(_b, ":")
-    print "* indexes from _d:"
-    print arrlib::sprintf_val(_d, ":")
+    @dprint(sprintf("* indexes from _b: <%s>", arrlib::sprintf_val(_b, ":")))
+    @dprint(sprintf("* indexes from _d: <%s>", arrlib::sprintf_val(_d, ":")))
     testing::assert_equal(arrlib::sprintf_val(_b, ":"), arrlib::sprintf_val(_d, ":"), 1,
 			  "> (val from _b) == (val from _d)")
-    print "* set_sort_order(_prev_order)"
+    @dprint("* set_sort_order(_prev_order)")
     awkpot::set_sort_order(_prev_order)
     
     # TEST arrlib::exists*
     arr["foo"]["bar"] = 12.2
     arr["foo"]["baz"] = "foo"
-    print "* arr:"; arrlib::array_print(arr)
+    @dprint("* arr:") && arrlib::array_print(arr)
     testing::assert_false(arrlib::exists(arr, "eggs"), 1, "> ! arrlib::exists(arr, \"eggs\")")
     testing::assert_false(arrlib::exists(arr, 4), 1, "> ! arrlib::exists(arr, 4)")
     testing::assert_false(arrlib::exists(arr, 10), 1, "> ! arrlib::exists(arr, 10)")
@@ -327,11 +329,10 @@ BEGIN {
     testing::assert_true(arrlib::exists_index_deep(arr, 3), 1, "> arrlib::exists_index_deep(arr, 3)")
     testing::assert_false(arrlib::exists_index(arr, "bar"), 1, "> ! arrlib::exists_index(arr, \"bar\")")
     testing::assert_true(arrlib::exists_index_deep(arr, "bar"), 1, "> arrlib::exists_index_deep(arr, \"bar\")")
-    print "* delete arr ..."
+    @dprint("* delete arr ...")
     delete arr
     testing::assert_false(arrlib::exists_index_deep(arr, "bar"), 1, "> arrlib::exists_index_deep(arr, \"bar\")")
-    print "-------"
-    print "* set $1 = \"m\"; $2 = \"ll\"; $3 = \"?\"; $4 = 5; $5 = 99"
+    @dprint("* set $1 = \"m\"; $2 = \"ll\"; $3 = \"?\"; $4 = 5; $5 = 99")
 
     # TEST arrlib::make_records && arrlib::exists_record
     $1 = "m"; $2 = "ll"; $3 = "?"; $4 = 5; $5 = 99
@@ -340,24 +341,25 @@ BEGIN {
     testing::assert_true(arrlib::exists_record("?", 11), 1, "> exists_record(\"?\", 11)")
     testing::assert_false(arrlib::exists_record("not_existent", 11), 1, "> ! exists_record(\"not_existent\", 11)")
     testing::assert_true(arrlib::exists_record(5, 4), 1, "> exists_record(5, 4)")
-    print "* make_array_record(b) ..."; arrlib::make_array_record(b)
-    print "* b:"; arrlib::array_print(b)
+    @dprint("* make_array_record(b)")
+    arrlib::make_array_record(b)
+    @dprint("* b:") && arrlib::array_print(b)
     testing::assert_equal(arrlib::array_length(b), 5, 1, "> array_length(b) == 5")
-    print "* array_copy(b, c)"; arrlib::array_copy(b, c)
-    print "* c:"; arrlib::array_print(c)
-    print "* b:"; arrlib::array_print(b)
-    print "* test if b equals c:"
+    @dprint("* array_copy(b, c)")
+    arrlib::array_copy(b, c)
+    @dprint("* c:") && arrlib::array_print(c)
+    @dprint("* b:") && arrlib::array_print(b)
     testing::assert_true(arrlib::equals(b, c), 1, "> arrlib::equals(b, c)")
     for (i in b)
 	testing::assert_equal(b[i], c[i], 1,
 			      sprintf("> b[%s] == c[%s] --> (%s, %s)", i, i, b[i], c[i]))
 
     # TEST arrlib::*length
-    print "* delete b ..."
+    @dprint("* delete b")
     delete b
     testing::assert_equal(arrlib::array_length(b), 0, 1, "> test array_length(b) == 0")
-    print "* b:"; arrlib::array_print(b)
-    print "* delete a ..."
+    @dprint("* b:") && arrlib::array_print(b)
+    @dprint("* delete a")
     delete a
     a["foo"] = "vfoo"
     a["bar"][1] = "bar1"
@@ -368,80 +370,92 @@ BEGIN {
     a["spam"][1] = "spam1"
     a["spam"][2] = "spam2"
     a["spam"][3] = "spam3"
-    print "* a:"; arrlib::array_print(a)
+    @dprint("* a:") && arrlib::array_print(a)
     testing::assert_equal(arrlib::array_length(a), 3, 1, "> array_length(a) == 3 -->")
     testing::assert_equal(arrlib::array_deep_length(a), 9, "> array_deep_length(a) == 9")
-    print "* delete b ..."
+    @dprint("* delete b")
     delete b
     testing::assert_equal(arrlib::array_length(b), 0, 1, "> array_length(b) == 0")
     testing::assert_equal(arrlib::array_deep_length(b), 0, 1, "> array_deep_length(b) == 0")
-    print "* delete x ..."
+    @dprint("* delete x")
     delete x
-    print "* set x[0]=0;x[1]=1;x[2]=2"; x[0]=0;x[1]=1;x[2]=2
+    @dprint("* set x[0]=0;x[1]=1;x[2]=2")
+    x[0]=0;x[1]=1;x[2]=2
     testing::assert_equal(arrlib::array_length(x), 3, 1, "> array_length(x) == 3")
     testing::assert_equal(arrlib::array_deep_length(x), 3, 1, "> array_deep_length(x) == 3")
-    print "* delete x ..."
+    @dprint("* delete x")
     delete x
 
     # TEST arrlib::equals
-    print "* delete c ..."
+    @dprint("* delete c")
     delete c
-    print "* arrlib::array_copy(a, b)"
+    @dprint("* arrlib::array_copy(a, b)")
     arrlib::array_copy(a, b)
-    print "* copy_array(a, c)"
+    @dprint("* copy_array(a, c)")
     copy_array(a, c)
     testing::assert_true(arrlib::equals(b, c), 1, "> arrlib::equals(b, c)")
     testing::assert_true(arrlib::equals(a, b), 1, "> arrlib::equals(a, b)")
-    print "* set a[1] = 1"; a[1] = 1
+    @dprint("* set a[1] = 1")
+    a[1] = 1
     testing::assert_false(arrlib::equals(a, b), 1, "> ! arrlib::equals(a, b)")
     testing::assert_false(arrlib::equals(a, c), 1, "> ! arrlib::equals(a, c)")
-    print "* delete a[1]"
+    @dprint("* delete a[1]")
     delete a[1]
     testing::assert_true(arrlib::equals(a, b), 1, "> arrlib::equals(a, b)")
     testing::assert_true(arrlib::equals(a, c), 1, "> arrlib::equals(a, c)")
 
-    print "* set a[\"spam\"][1] = 4; b[\"spam\"][5] = 5"
+    @dprint("* set a[\"spam\"][1] = 4; b[\"spam\"][5] = 5")
     a["spam"][1] = 4
     b["spam"][5] = 5
     testing::assert_false(arrlib::equals(a, b), 1, "> ! arrlib::equals(a, b)")
-    print "* set a[\"spam\"][1] = \"spam1\""
+    @dprint("* set a[\"spam\"][1] = \"spam1\"")
     a["spam"][1] = "spam1"
-    print "* delete  b[\"spam\"][5]"
+    @dprint("* delete  b[\"spam\"][5]")
     delete b["spam"][5]
     testing::assert_true(arrlib::equals(a, b), 1, "> arrlib::equals(a, b)")
 
-    print "* set a[\"spam\"][4] = 4"
+    @dprint("* set a[\"spam\"][4] = 4")
     a["spam"][4] = 4
-    print "* set b[\"spam\"][5] = 5"
+    @dprint("* set b[\"spam\"][5] = 5")
     b["spam"][5] = 5
     testing::assert_false(arrlib::equals(a, b), 1, "> ! arrlib::equals(a, b)")
 
-    print "* delete a[\"spam\"][4]"
+    @dprint("* delete a[\"spam\"][4]")
     delete a["spam"][4]
-    print "* delete b[\"bar\"][5]"
+    @dprint("* delete b[\"bar\"][5]")
     delete  b["spam"][5]
     testing::assert_true(arrlib::array_sprintf(b) == arrlib::array_sprintf(b), 1, "> (sprintf) a == b)")
     testing::assert_true(arrlib::equals(a, b), 1, "> arrlib::equals(a, b)")
     
-    print "* set b[1] = 1"; b[1] = 1
+    @dprint("* set b[1] = 1")
+    b[1] = 1
     testing::assert_false(arrlib::equals(a, b), 1, "> ! arrlib::equals(a, b)")
-    print "* delete b[1]"; delete b[1]
+    @dprint("* delete b[1]")
+    delete b[1]
     testing::assert_true(arrlib::equals(a, b), 1, "> arrlib::equals(a, b)")
-    print "* set b[\"spam\"][3] = \"spam2\""; b["spam"][3] = "spam2"
+    @dprint("* set b[\"spam\"][3] = \"spam2\"")
+    b["spam"][3] = "spam2"
     testing::assert_false(arrlib::equals(a, b), 1, "> ! arrlib::equals(a, b)")
-    print "* set a[\"spam\"][3] = \"spam2\""; a["spam"][3] = "spam2"
+    @dprint("* set a[\"spam\"][3] = \"spam2\"")
+    a["spam"][3] = "spam2"
     testing::assert_true(arrlib::equals(a, b), 1, "> arrlib::equals(a, b)")
-    print "* set b[\"spam\"][5] = 5"; b["spam"][5] = 5
+    @dprint("* set b[\"spam\"][5] = 5")
+    b["spam"][5] = 5
     testing::assert_false(arrlib::equals(a, b), 1, "> ! arrlib::equals(a, b) =")
-    print "* delete b[\"spam\"][5] = 5"; delete b["spam"][5]
+    @dprint("* delete b[\"spam\"][5] = 5")
+    delete b["spam"][5]
     testing::assert_true(arrlib::equals(a, b), 1, "> arrlib::equals(a, b)")
-    print "* set a[\"bar\"][4][3] = 3"; a["bar"][4][3] = 3
+    @dprint("* set a[\"bar\"][4][3] = 3")
+    a["bar"][4][3] = 3
     testing::assert_false(arrlib::equals(a, b), 1, "> ! arrlib::equals(a, b)")
-    print "* delete a[\"bar\"][4][3]"; delete a["bar"][4][3]
+    @dprint("* delete a[\"bar\"][4][3]")
+    delete a["bar"][4][3]
     testing::assert_true(arrlib::equals(a, b), 1, "> arrlib::equals(a, b)")
-    print "* set b[\"bar\"][4][11] = 11"; b["bar"][4][11] = 1
+    @dprint("* set b[\"bar\"][4][11] = 11")
+    b["bar"][4][11] = 1
     testing::assert_false(arrlib::equals(a, b), 1, "> ! arrlib::equals(a, b)")
-    print "* delete b[\"bar\"][4][11]"; delete b["bar"][4][11]
+    @dprint("* delete b[\"bar\"][4][11]")
+    delete b["bar"][4][11]
     testing::assert_true(arrlib::equals(a, b), 1, "> arrlib::equals(a, b)")
 
     delete arr1;delete arr2
@@ -456,72 +470,75 @@ BEGIN {
     # TEST empty
     testing::assert_false(arrlib::is_empty(b), 1, "> ! arrlib::is_empty(b)")
     testing::assert_true(arrlib::array_length(b) > 0, 1, "> arrlib::array_length(b) > 0")
-    print "* delete b ..."
+    @dprint("* delete b")
     delete b
     testing::assert_true(arrlib::is_empty(b), 1, "> arrlib::is_empty(b)")
     testing::assert_false(arrlib::array_length(b), 1, "> arrlib::array_length(b) == 0")
-    print "* set b[0]=0;b[1]=1"; b[0]=0;b[1]=1
+    @dprint("* set b[0]=0;b[1]=1")
+    b[0]=0;b[1]=1
     testing::assert_false(arrlib::is_empty(b), 1, "> ! arrlib::is_empty(b)")
-    print "* delete b[0]"; delete b[0]
+    @dprint("* delete b[0]")
+    delete b[0]
     testing::assert_false(arrlib::is_empty(b), 1, "> ! arrlib::is_empty(b)")
-    print "delete b[1]"; delete b[1]
+    @dprint("delete b[1]")
+    delete b[1]
     testing::assert_true(arrlib::is_empty(b), 1, "> arrlib::is_empty(b)")
     delete b
     
     # TEST test remove_empty && # TEST arrlib::array_copy with unassigned values
     arrlib::array_copy(ba, bb)
     testing::assert_true(arrlib::equals(ba, bb), 1, "> arrlib::equals(ba, bb)")
-    print "* ba:";arrlib::array_print(ba)
-    print "* bb:";arrlib::array_print(bb)
-    print "* adding fake arrays to bb..."
+    @dprint("* ba:") && arrlib::array_print(ba)
+    @dprint("* bb:") && arrlib::array_print(bb)
+    @dprint("* adding fake arrays to bb")
     bb["X-X-X"]
     bb["eggs"][0]
     bb["eggs"][1]
     bb["eggs"][2][1][2]
     bb["eggs"][2][1][2]
-    print "bb:";arrlib::array_print(bb)
+    @dprint("bb:") && arrlib::array_print(bb)
 
     ba_len = arrlib::array_deep_length(ba)
     bb_len = arrlib::array_deep_length(bb)
     testing::assert_not_equal(ba_len, bb_len, 1, "> (len) ba != (len) bb)")
-    printf "* (length) ba: %d, bb: %d\n", ba_len, bb_len
+    @dprint(sprintf("* (length) ba: %d, bb: %d", ba_len, bb_len))
     testing::assert_false(arrlib::equals(ba, bb), 1, "> ! arrlib::equals(ba, bb)")
     
-    print "* arrlib::array_copy(bb, bc)"
+    @dprint("* arrlib::array_copy(bb, bc)")
     arrlib::array_copy(bb, bc)
 
     _prev_order = awkpot::set_sort_order("@ind_num_desc")
     bb_str = arrlib::array_sprintf(bb)
     bc_str = arrlib::array_sprintf(bc)
-    print "* bb_str";print bb_str
-    print "* bc_str";print bc_str
+    @dprint(sprintf("* bb_str: <%s>", bb_str))
+    @dprint(sprintf("* bc_str: <%s>", bc_str))
     testing::assert_equal(bb_str, bc_str, 1, "> (sprintf) bb == bc")
     awkpot::set_sort_order(_prev_order)
 
     #print "* bc:";arrlib::array_print(bc)
     testing::assert_true(arrlib::equals(bb, bc), 1, "> arrlib::equals(bb, bc)")
 
-    print "* remove_empty(bb)"
+    @dprint("* remove_empty(bb)")
     arrlib::remove_empty(bb) # fake arrays not empty, so not removed
-    print "* bb:"; arrlib::array_print(bb)
+    @dprint("* bb:") && arrlib::array_print(bb)
     testing::assert_true(arrlib::equals(bb, bc), 1, "> arrlib::equals(bb, bc)")
     testing::assert_false(arrlib::equals(ba, bb), 1, "> ! arrlib::equals(ba, bb)")
     testing::assert_not_equal(ba_len, arrlib::array_deep_length(bb), 1, "> (len) ba != (len) bb)")
-    printf "* (length) ba: %d, bb: %d\n", arrlib::array_deep_length(ba), arrlib::array_deep_length(bb)
+    @dprint(sprintf("* (length) ba: %d, bb: %d", arrlib::array_deep_length(ba), arrlib::array_deep_length(bb)))
 
-    print "* remove unassigned elements from bb ..."
+    @dprint("* remove unassigned elements from bb")
     arrlib::remove_unassigned(bb) # now fake arrays are removed, unassigned elements too
 
     _prev_order = awkpot::set_sort_order("@ind_num_desc")
-    print "ba:";arrlib::array_print(ba)
-    print "bb:";arrlib::array_print(bb)
+    @dprint("* ba:") && arrlib::array_print(ba)
+    @dprint("* bb:") && arrlib::array_print(bb)
     testing::assert_false(arrlib::equals(bb, bc), 1, "> ! arrlib::equals(bc, bb)")
-    print "* arrlib::remove_unassigned(bc)"
+    @dprint("* arrlib::remove_unassigned(bc)")
     arrlib::remove_unassigned(bc) # remove fakes from bc too
     testing::assert_true(arrlib::equals(bb, bc), 1, "> arrlib::equals(bc, bb)")
 
     testing::assert_equal(ba_len, arrlib::array_deep_length(bb), 1, "> (len) ba == (len) bb")
-    printf "* (length) ba: %d, bb: %d\n", arrlib::array_deep_length(ba), arrlib::array_deep_length(bb)
+    @dprint(sprintf("* (length) ba: %d, bb: %d", arrlib::array_deep_length(ba), arrlib::array_deep_length(bb)))
     testing::assert_equal(arrlib::array_sprintf(bb), arrlib::array_sprintf(ba), 1, "> (sprintf) bb == ba")
     awkpot::set_sort_order(_prev_order)
 
@@ -530,14 +547,14 @@ BEGIN {
     
 
     delete bd
-    print "* arrlib::array_copy(bb, bd)"
+    @dprint("* arrlib::array_copy(bb, bd)")
     arrlib::array_copy(bb, bd)
-    print "* bd:";arrlib::array_print(bd)
+    @dprint("* bd:") && arrlib::array_print(bd)
     testing::assert_equal(arrlib::array_deep_length(bd), arrlib::array_deep_length(bb), 1, "> (len) bd == (len) bb)")
     testing::assert_true(arrlib::equals(bb, bd), 1, "> arrlib::equals(bd, bb)")
+    
 
 
-    ### awk '$0 ~ /^function [^_]/ {print gensub(/^(.*?)(\(.*)/, "\\1", "g", $2)}' ~/local/share/awk/arrlib.awk
     testing::end_test_report()
     testing::report()
 
@@ -545,7 +562,12 @@ BEGIN {
 	exit(0)
 }
 
-# example: ~$ seq 30 | column | awk -f arrlib_test.awk
+# * runs:
+# ~$ awk -v ARRLIB_DEBUG=1 -v NOHANGUP=1 -f test/arrlib_test.awk
+# ~$ seq 30 | column | awk -f arrlib_test.awk
+# * list functions:
+# awk '$0 ~ /^function [^_]/ {print gensub(/^(.*?)(\(.*)/, "\\1", "g", $2)}' ~/local/share/awk/arrlib.awk
+
 {
     arrlib::make_array_record(a)
     testing::assert_equal(arrlib::array_length(a), NF, 1, "arrlib::array_length(a) == NF")
