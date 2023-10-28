@@ -116,7 +116,6 @@ BEGIN {
 
     delete b1; delete c; delete d; delete x;
 				   
-				   #################
     # TEST printing
     # array_sprintf, sort order, ...
     x["x"]="xx";x[0]=1;x[1]="zero";x[2]=3
@@ -553,8 +552,120 @@ BEGIN {
     testing::assert_equal(arrlib::array_deep_length(bd), arrlib::array_deep_length(bb), 1, "> (len) bd == (len) bb)")
     testing::assert_true(arrlib::equals(bb, bd), 1, "> arrlib::equals(bd, bb)")
     
+    # TEST get_idx / get_val
+    delete idxarr
+    @dprint("* test get_idx:")
+    @dprint("* bg:") && arrlib::array_print(bg)
+    count = arrlib::get_idx(bg, idxarr)
 
+    @dprint("* idxarr:") && arrlib::array_print(idxarr)
+    idxstr = arrlib::sprintf_val(idxarr, ":")
+    @dprint(sprintf("* idxstr: <%s>", idxstr))
+    testing::assert_equal(count, arrlib::array_length(idxarr), 1, "> (idxarr) count == length")
 
+    count = arrlib::get_val(idxarr, valarr)
+    @dprint("* valarr:") && arrlib::array_print(valarr)
+    valstr = arrlib::sprintf_val(valarr, ":")
+    @dprint(sprintf("* valstr: <%s>", valstr))
+    testing::assert_equal(count, arrlib::array_length(valarr), 1, "> (valarr) count == length")
+
+    testing::assert_equal(valstr, idxstr, 1, "> valstr == idxstr")
+
+    # test on flat arrays
+    delete chrarr
+    delete valarr
+    delete idxarr
+    _prev_order = awkpot::set_sort_order("@ind_num_asc")
+
+    for (i=50; i<100; i++)
+	chrarr[i] = sprintf("%c", i)
+    idxstr_cmp = arrlib::sprintf_idx(chrarr, ":")
+    valstr_cmp = arrlib::sprintf_val(chrarr, ":")
+
+    @dprint("* chrarr:") && arrlib::array_print(chrarr)
+    count = arrlib::get_idx(chrarr, idxarr)
+    @dprint("* idxarr:") && arrlib::array_print(idxarr)
+    idxstr = arrlib::sprintf_val(idxarr, ":")
+    @dprint(sprintf("* idxstr: <%s>", idxstr))
+    testing::assert_equal(count, arrlib::array_length(idxarr), 1, "> (idxarr) count == length")
+    testing::assert_equal(idxstr, idxstr_cmp, 1, "> idxstr == idxstr_cmp")
+
+    count = arrlib::get_val(chrarr, valarr)
+    @dprint("* valarr:") && arrlib::array_print(valarr)
+    valstr = arrlib::sprintf_val(valarr, ":")
+    @dprint(sprintf("* valstr: <%s>", valstr))
+    testing::assert_equal(count, arrlib::array_length(valarr), 1, "> (valarr) count == length")
+    testing::assert_equal(valstr, valstr_cmp, 1, "> valstr == valstr_cmp")
+
+    # change some values, empty string and unassigned
+    @dprint("* change some chrarr values to the empty string and unassigned")
+    chrarr[55] = ""
+    delete chrarr[56]
+    delete valarr
+    delete idxarr
+    idxstr_cmp = arrlib::sprintf_idx(chrarr, ":")
+    valstr_cmp = arrlib::sprintf_val(chrarr, ":")
+    count = arrlib::get_idx(chrarr, idxarr)
+    idxstr = arrlib::sprintf_val(idxarr, ":")
+    @dprint(sprintf("* idxstr: <%s>", idxstr))
+    testing::assert_equal(count, arrlib::array_length(idxarr), 1, "> (idxarr) count == length")
+    testing::assert_equal(idxstr, idxstr_cmp, 1, "> idxstr == idxstr_cmp")
+
+    count = arrlib::get_val(chrarr, valarr)
+    valstr = arrlib::sprintf_val(valarr, ":")
+    @dprint(sprintf("* valstr: <%s>", valstr))
+    testing::assert_equal(count, arrlib::array_length(valarr), 1, "> (valarr) count == length")
+    testing::assert_equal(valstr, valstr_cmp, 1, "> valstr == valstr_cmp")
+
+    delete a
+    delete idxarr
+    delete valarr
+    a[0][1][11][111][1111][11111][111111] = "one"
+    a[0][1][11][2][22][222][2222] = "two"
+    a[0][1][11][3][33][333][3333] = "three"
+    a[1][2][3][4][5][5][6] = "six"
+    a[1][2][3][4][5][5][7] = "seven"
+    a[1][2][4][5][6][7][8] = "eight"
+    a[2][3][4][5][6][7][8][9] = "nine"
+    @dprint("* a:") && arrlib::array_print(a)
+
+    idx_count = arrlib::get_idx(a, idxarr)
+    val_count = arrlib::get_val(a, valarr)
+
+    @dprint("* idxarr:") && arrlib::array_print(idxarr)
+    @dprint("* valarr:") && arrlib::array_print(valarr)
+
+    testing::assert_equal(idx_count, arrlib::array_length(idxarr), 1, "> idx_count == length(idxarr)")
+    testing::assert_equal(idx_count, 36, 1, "> idx_count == 36")
+    testing::assert_equal(val_count, arrlib::array_length(valarr), 1, "> val_count == length(valarr)")
+    testing::assert_equal(val_count, 7, 1, "> val_count == 7")
+
+    delete a
+    delete idxarr
+    delete valarr
+    a[0]
+    a[1][11]
+    a[2][22][222]
+    a[3][33][333][3333]
+    a[4][44][444][4444][44444]
+    a[5][55][555][5555][55555][555555]
+    @dprint("* a:") && arrlib::array_print(a)
+
+    idx_count = arrlib::get_idx(a, idxarr)
+    val_count = arrlib::get_val(a, valarr)
+
+    @dprint("* idxarr:") && arrlib::array_print(idxarr)
+    @dprint("* valarr:") && arrlib::array_print(valarr)
+
+    testing::assert_equal(idx_count, arrlib::array_length(idxarr), 1, "> idx_count == length(idxarr)")
+    testing::assert_equal(idx_count, 21, 1, "> idx_count == 21")
+    testing::assert_equal(val_count, arrlib::array_length(valarr), 1, "> val_count == length(valarr)")
+    testing::assert_equal(val_count, 6, 1, "> val_count == 6")
+
+    
+    awkpot::set_sort_order(_prev_order)
+
+    
     testing::end_test_report()
     testing::report()
 

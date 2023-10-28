@@ -113,6 +113,40 @@ function array_sprintf(arr, depth, from, sort_type,    prev_sorted) {
     return out
 }
 
+function _get_idx_rec(arr, dest, depth, from,    count, idx) {
+    # Private function to get the indexes of the (possibly nested)
+    # array $arr from the $from level until the $depth level of subarrays.
+    # The very level of $arr is at depth 0.
+    # Indexes are stored in the $dest array as values.
+    # $dest indexes starts from 0.
+    # NOTE: uses recursion.
+    if (depth == 0)
+	return count
+    for (idx in arr) {
+	_pre = depth pre "" idx
+	if (from <= 0)
+	    dest[count++] = idx
+	if (awk::isarray(arr[idx]))
+	    count = _get_idx_rec(arr[idx], dest, depth-1, from-1, count)
+    }
+    return count
+}
+function get_idx(arr, dest, depth, from,    count, idx) {
+    # Function to get the indexes of the (possibly nested)
+    # array $arr from the $from level until the $depth level of subarrays.
+    # The very level of $arr is at depth 0.
+    # Indexes are stored in the $dest array as values.
+    # $dest indexes starts from 0.
+    # Returns the total number of indexes.
+    # NOTE: uses recursion (_get_idx_rec).
+    if (! from)
+	from = 0
+    if (! depth)
+	depth = -1
+    count = 0
+    return _get_idx_rec(arr, dest, depth, from, count)
+}
+
 function _print_idx_rec(arr, outfile, depth, from,    i, idx) {
     # Private function to print the indexes of the (possibly nested)
     # array $arr from the $from level until the $depth level of subarrays.
@@ -222,6 +256,43 @@ function sprintf_idx(arr, separator, depth, from) {
     return _sprintf_idx_rec(arr, separator, depth, from)
 }
 
+function _get_val_rec(arr, dest, depth, from,    count, idx) {
+    # Private function to get the values of the (possibly nested) array $arr,
+    # from the $from level until the $depth level of subarrays.
+    # The very level of $arr is at depth 0.
+    # Values are stored in the $dest array as values.
+    # $dest indexes starts from 0.
+    # Returns the total number of values.
+    # NOTE: uses recursion.
+    if (depth == 0)
+	return count
+    for (idx in arr)
+	if (awk::isarray(arr[idx]))
+	    count = _get_val_rec(arr[idx], dest, depth-1, from-1, count)
+	else
+	    if (from <= 0)
+		dest[count++] = arr[idx]
+    return count
+}
+
+function get_val(arr, dest, depth, from,    count, idx) {
+    # Function to get the values of the (possibly nested) array $arr, optionally
+    # from the $from level of subarrays and optionally until the $depth level
+    # of subarrays. If $from is less than 1, scans from the very level of $arr.
+    # $depth should be a positive integer, if less than 1 scans until max depth.
+    # The very level of $arr is at depth 0.
+    # Values are stored in the $dest array as values.
+    # $dest indexes starts from 0.
+    # Returns the total number of values.
+    # NOTE: uses recursion (_get_val_rec).
+    if (! from)
+	from = 0
+    if (! depth)
+	depth = -1
+    count = 0
+    return _get_val_rec(arr, dest, depth, from, count)
+}
+
 function _print_val_rec(arr, outfile, depth, from,    i, idx) {
     # Private function to print the values of the (possibly nested) array $arr,
     # from the $from level until the $depth level of subarrays.
@@ -328,12 +399,13 @@ function remove_empty(arr,    idx) {
 }
 
 function remove_unassigned(arr,    idx, i, tmp) {
-    # Removes unassigned values from $arr.
+    # Removes unassigned and untyped values from $arr.
     # NOTE: uses recursion.
     for (idx in arr) {
 	if (awk::isarray(arr[idx]))
 	    remove_unassigned(arr[idx])
-	if (awk::typeof(arr[idx]) == "unassigned")
+        # double check for gawk verion < 5.2
+	if (awk::typeof(arr[idx]) == "unassigned" || awk::typeof(arr[idx]) == "untyped")
 	    delete arr[idx]
     }
     # remove possibly empty arrays after removal of unassigned values
