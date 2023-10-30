@@ -6,6 +6,9 @@
 # https://github.com/crap0101/laundry_basket/blob/master/testing.awk
 
 @load "arrayfuncs"
+# https://github.com/crap0101/awk_arrayfuncs
+@load "sysutils"
+# https://github.com/crap0101/awk_sysutils
 
 function _rec(arr,    i) {
     # ricorsione infinita...
@@ -139,7 +142,7 @@ BEGIN {
     delete b1; delete bc
     
     # sprintf_val
-    _t3 = awkpot::get_tempfile()
+    _t3 = sys::mktemp("/tmp")
     arrlib::print_idx(ba, _t3)
     awkpot::read_file_arr(_t3, bf)
     array::deep_flat_array_idx(ba, bbg)
@@ -152,6 +155,7 @@ BEGIN {
     testing::assert_equal(bs, bfs, 1, "> bs == bfs")
     testing::assert_equal(bs_over, bfs, 1, "> bs_over == bfs")
     testing::assert_equal(bs, bs_neg, 1, "> bs == bs_neg")
+    sys::rm(_t3)
     
     # check empty values
     _pv = awkpot::set_sort_order("@val_str_asc")
@@ -214,8 +218,8 @@ BEGIN {
     delete bd;delete be;delete bf;delete bbg
 
     # with depth
-    _t1 = awkpot::get_tempfile()
-    _t2 = awkpot::get_tempfile()
+    _t1 = sys::mktemp("/tmp")
+    _t2 = sys::mktemp("/tmp")
     @dprint(sprintf("* arrlib::array_print(ba, %s)", _t1))
     arrlib::array_print(ba, _t1, 2)
     bs = arrlib::array_sprintf(ba, 2)
@@ -224,9 +228,11 @@ BEGIN {
     awkpot::read_file_arr(_t1, ba_read)
     awkpot::read_file_arr(_t2, bs_read)
     testing::assert_true(arrlib::equals(ba_read, bs_read), 1, "> ba_read == bs_read")
+    sys::rm(_t1)
+    sys::rm(_t2)
     
     # sprintf_val
-    _t3 = awkpot::get_tempfile()
+    _t3 = sys::mktemp("/tmp")
     arrlib::print_val(ba, _t3, 2)
     awkpot::read_file_arr(_t3, ba_read)
     @dprint("* ba_read:") && arrlib::array_print(ba_read)
@@ -234,7 +240,8 @@ BEGIN {
     ba_str = arrlib::sprintf_val(ba_read, ":")
     arrlib::array_copy(ba, ba_pcopy, 2)
     @dprint("* ba_pcopy:") && arrlib::array_print(ba_pcopy)
-
+    sys::rm(_t3)
+    
     #arrlib::array_print
     array::deep_flat_array(ba_pcopy, ba_flat)
     @dprint("* ba_flat:") && arrlib::array_print(ba_flat)
@@ -285,7 +292,7 @@ BEGIN {
     testing::assert_true(arrlib::equals(bavs, bav), 1, "> sprintf_val (depth=3, from =1): bavs == bav")
     delete bas; delete bat; delete bavs; delete bav
 
-    _t1 = awkpot::get_tempfile()
+    _t1 = sys::mktemp("/tmp")
     arrlib::print_idx(a, _t1)
     awkpot::read_file_arr(_t1, _c)
     awk::asort(_c)
@@ -295,8 +302,9 @@ BEGIN {
     @dprint(sprintf("* indexes from _c: <%s>", arrlib::sprintf_val(_c, ":")))
     testing::assert_equal(arrlib::sprintf_val(_a, ":"), arrlib::sprintf_val(_c, ":"),
 			  1, "> (idx from _a) == (idx from _c)")
-
-    _t1 = awkpot::get_tempfile()
+    sys::rm(_t1)
+    
+    _t1 = sys::mktemp("/tmp")
     arrlib::print_val(a, _t1)
     awkpot::read_file_arr(_t1, _d)
     awk::asort(_d)
@@ -308,7 +316,8 @@ BEGIN {
 			  "> (val from _b) == (val from _d)")
     @dprint("* set_sort_order(_prev_order)")
     awkpot::set_sort_order(_prev_order)
-    
+    sys::rm(_t1)
+	
     # TEST arrlib::exists*
     arr["foo"]["bar"] = 12.2
     arr["foo"]["baz"] = "foo"
