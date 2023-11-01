@@ -670,10 +670,38 @@ BEGIN {
     testing::assert_equal(idx_count, 21, 1, "> idx_count == 21")
     testing::assert_equal(val_count, arrlib::array_length(valarr), 1, "> val_count == length(valarr)")
     testing::assert_equal(val_count, 6, 1, "> val_count == 6")
-
     
-    awkpot::set_sort_order(_prev_order)
+    # TEST uniq
 
+    delete __arr
+    delete dest
+    for (i=0;i<5;i++)
+        if (i % 2) {
+            for (ii=0;ii<5;ii++)
+                __arr[i][ii]=ii
+        } else {
+	    __arr[i] = i
+	}
+
+    @dprint("* __arr:") && arrlib::array_print(__arr)
+    @dprint("* uniq...")
+    arrlib::uniq(__arr, dest)
+    @dprint("* dest:") && arrlib::array_print(dest)
+    testing::assert_equal(arrlib::sprintf_val(dest), "01234", 1, "> uniq test dest (1)")
+    arrlib::array_print(dest)
+
+    delete __arr
+    delete dest
+    for (i=0;i<5;i++)
+        __arr[i]=i%2    
+
+    @dprint("* __arr:") && arrlib::array_print(__arr)
+    print "* uniq..."
+    arrlib::uniq(__arr, dest)
+    testing::assert_equal(arrlib::sprintf_val(dest), "01", 1, "> uniq test dest (2)")
+    arrlib::array_print(dest)
+
+    awkpot::set_sort_order(_prev_order)
     
     testing::end_test_report()
     testing::report()

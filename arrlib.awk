@@ -1,4 +1,7 @@
 
+# Pure awk functions to manage arrays
+
+
 @include "awkpot"
 # https://github.com/crap0101/awkpot
 
@@ -652,8 +655,28 @@ function equals(arr1, arr2, level, check_type) {
 	check_equals = "awkpot::equals"
     else
 	check_equals = "awkpot::equals_typed"
-    return _equals_rec(arr1, arr2, level)
-    
+    return _equals_rec(arr1, arr2, level)    
+}
+
+
+function _uniq(arr, dest,    idx) {  
+    # Private (and partial) function for fill $dest array
+    # with unique values from $arr array.
+    # NOTE: used by the <uniq> function. If used alone,
+    # needs a call to asorti($dest) to get the same result.
+    # NOTE: uses recursion.
+    for (idx in arr)
+        if (awk::isarray(arr[idx]))
+            _uniq(arr[idx], dest)
+        else
+            dest[arr[idx]]
+}
+
+function uniq(arr, dest) {
+    # Fills $dest array with unique values from $arr array.
+    # NOTE: uses recursion (_uniq).
+    _uniq(arr, dest)
+    awk::asorti(dest)
 }
 
 BEGIN {
