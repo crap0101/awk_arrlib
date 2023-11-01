@@ -671,14 +671,16 @@ BEGIN {
     testing::assert_equal(val_count, arrlib::array_length(valarr), 1, "> val_count == length(valarr)")
     testing::assert_equal(val_count, 6, 1, "> val_count == 6")
     
-    # TEST uniq
-
+    # TEST uniq, uniq_idx
+    awkpot::set_sort_order(_prev_order)
+    _prev_order = awkpot::set_sort_order("@val_num_asc")
     delete __arr
     delete dest
+    delete dest_i
     for (i=0;i<5;i++)
         if (i % 2) {
             for (ii=0;ii<5;ii++)
-                __arr[i][ii]=ii
+                __arr[i][ii]=(ii+1)*10
         } else {
 	    __arr[i] = i
 	}
@@ -686,20 +688,29 @@ BEGIN {
     @dprint("* __arr:") && arrlib::array_print(__arr)
     @dprint("* uniq...")
     arrlib::uniq(__arr, dest)
-    @dprint("* dest:") && arrlib::array_print(dest)
-    testing::assert_equal(arrlib::sprintf_val(dest), "01234", 1, "> uniq test dest (1)")
-    arrlib::array_print(dest)
+    @dprint("* dest (uniq):") && arrlib::array_print(dest)
+    @dprint("* uniq_idx...")
+    arrlib::uniq_idx(__arr, dest_i)
+    @dprint("* dest_i (uniq_idx):") && arrlib::array_print(dest_i)
+    testing::assert_equal(arrlib::sprintf_val(dest, ":"), "0:2:4:10:20:30:40:50", 1, "> uniq test dest (1)")
+    testing::assert_equal(arrlib::sprintf_val(dest_i, ":"), "0:1:2:3:4", 1, "> uniq_idx test dest_i (1)")
+
 
     delete __arr
     delete dest
+    delete dest_i
     for (i=0;i<5;i++)
         __arr[i]=i%2    
 
     @dprint("* __arr:") && arrlib::array_print(__arr)
-    print "* uniq..."
+    @dprint("* uniq...")
     arrlib::uniq(__arr, dest)
-    testing::assert_equal(arrlib::sprintf_val(dest), "01", 1, "> uniq test dest (2)")
-    arrlib::array_print(dest)
+    @dprint("* dest (uniq):") && arrlib::array_print(dest)
+    @dprint("* uniq_idx...")
+    arrlib::uniq_idx(__arr, dest_i)
+    @dprint("* dest_i (uniq_idx):") && arrlib::array_print(dest_i)
+    testing::assert_equal(arrlib::sprintf_val(dest, ":"), "0:1", 1, "> uniq test dest (2)")
+    testing::assert_equal(arrlib::sprintf_val(dest_i, ":"), "0:1:2:3:4", 1, "> uniq_idx test dest_i (2)")
 
     awkpot::set_sort_order(_prev_order)
     
