@@ -677,6 +677,7 @@ BEGIN {
     delete __arr
     delete dest
     delete dest_i
+    delete dest_v
     for (i=0;i<5;i++)
         if (i % 2) {
             for (ii=0;ii<5;ii++)
@@ -692,13 +693,25 @@ BEGIN {
     @dprint("* uniq_idx...")
     arrlib::uniq_idx(__arr, dest_i)
     @dprint("* dest_i (uniq_idx):") && arrlib::array_print(dest_i)
-    testing::assert_equal(arrlib::sprintf_val(dest, ":"), "0:2:4:10:20:30:40:50", 1, "> uniq test dest (1)")
-    testing::assert_equal(arrlib::sprintf_val(dest_i, ":"), "0:1:2:3:4", 1, "> uniq_idx test dest_i (1)")
+    testing::assert_equal(arrlib::sprintf_idx(dest, ":"), "0:2:4:10:20:30:40:50", 1, "> uniq test dest (1)")
+    testing::assert_equal(arrlib::sprintf_idx(dest_i, ":"), "0:1:2:3:4", 1, "> uniq_idx test dest_i (1)")
+
+    # check all values are unassigned:
+        arrlib::uniq(dest, dest_v)
+    testing::assert_equal(arrlib::array_length(dest_v), 1, 1, "> uniq dest_v length")
+    for (i in dest_v)
+	testing::assert_equal(typeof(dest_v[i]), "unassigned", 1, "> uniq dest_v type")
+    delete dest_v
+    arrlib::uniq(dest_i, dest_v)
+    testing::assert_equal(arrlib::array_length(dest_v), 1, 1, "> uniq dest_v length (2)")
+    for (i in dest_v)
+	testing::assert_equal(typeof(dest_v[i]), "unassigned", 1, "> uniq dest_v type (2)")
 
 
     delete __arr
     delete dest
     delete dest_i
+    delete dest_v
     for (i=0;i<5;i++)
         __arr[i]=i%2    
 
@@ -709,8 +722,19 @@ BEGIN {
     @dprint("* uniq_idx...")
     arrlib::uniq_idx(__arr, dest_i)
     @dprint("* dest_i (uniq_idx):") && arrlib::array_print(dest_i)
-    testing::assert_equal(arrlib::sprintf_val(dest, ":"), "0:1", 1, "> uniq test dest (2)")
-    testing::assert_equal(arrlib::sprintf_val(dest_i, ":"), "0:1:2:3:4", 1, "> uniq_idx test dest_i (2)")
+    testing::assert_equal(arrlib::sprintf_idx(dest, ":"), "0:1", 1, "> uniq test dest (2)")
+    testing::assert_equal(arrlib::sprintf_idx(dest_i, ":"), "0:1:2:3:4", 1, "> uniq_idx test dest_i (2)")
+
+    # check all values are unassigned:
+    arrlib::uniq(dest, dest_v)
+    testing::assert_equal(arrlib::array_length(dest_v), 1, 1, "> uniq dest_v length (3)")
+    for (i in dest_v)
+	testing::assert_equal(typeof(dest_v[i]), "unassigned", 1, "> uniq dest_v type (3)")
+    delete dest_v
+    arrlib::uniq(dest_i, dest_v)
+    testing::assert_equal(arrlib::array_length(dest_v), 1, 1, "> uniq dest_v length (4)")
+    for (i in dest_v)
+	testing::assert_equal(typeof(dest_v[i]), "unassigned", 1, "> uniq dest_v type (4)")
 
     awkpot::set_sort_order(_prev_order)
     

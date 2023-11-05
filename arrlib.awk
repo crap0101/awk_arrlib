@@ -661,9 +661,7 @@ function equals(arr1, arr2, level, check_type) {
 
 function _uniq(arr, dest,    idx) {  
     # Private (and partial) function for fill $dest array
-    # with unique values from the $arr array.
-    # NOTE: used by the <uniq> function. If used alone,
-    # needs a call to asorti($dest) to get the same result.
+    # with unique values from the $arr array as indexes with unassigned value.
     # NOTE: uses recursion.
     for (idx in arr)
         if (awk::isarray(arr[idx]))
@@ -673,17 +671,16 @@ function _uniq(arr, dest,    idx) {
 }
 
 function uniq(arr, dest) {
-    # Fills $dest array with unique values from $arr array.
+    # Fills $dest array with unique values from $arr array
+    # as indexes with unassigned value.
     # NOTE: uses recursion (_uniq).
     _uniq(arr, dest)
-    awk::asorti(dest)
 }
 
 function _uniq_idx(arr, dest,   idx) {
     # Private (and partial) function for fill $dest array
-    # with unique indexes from the $arr array.
-    # NOTE: used by the <uniq_idx> function. If used alone,
-    # needs a call to asorti($dest) to get the same result.
+    # with unique indexes from the $arr array
+    # as indexes with unassigned value.
     # NOTE: uses recursion.
     for (idx in arr)
         if (awk::isarray(arr[idx]))
@@ -693,10 +690,10 @@ function _uniq_idx(arr, dest,   idx) {
 }
 
 function uniq_idx(arr, dest) {
-    # Fills $dest array with unique indexes from the $arr array.
+    # Fills $dest array with unique indexes from the $arr array
+    # as indexes with unassigned value.
     # NOTE: uses recursion (_uniq_idx).
    _uniq_idx(arr, dest)
-   awk::asorti(dest)
 }
 
 
