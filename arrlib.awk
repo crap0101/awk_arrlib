@@ -43,7 +43,7 @@ function _arr_print_rec(arr, outfile, depth, from,    fmt, _fmt, i) {
     }
 }
 
-function array_print(arr, outfile, depth, from, sort_type,    prev_sorted) {
+function printa(arr, outfile, depth, from, sort_type,    prev_sorted) {
     # Prints the (possibly nested) array $arr, optionally
     # starting from the $from level of subarrays until the $depth
     # level of subarrays and optionally
@@ -93,7 +93,7 @@ function _arr_sprintf_rec(arr, depth, from,    fmt, _fmt, i, out) {
     return out
 }
 
-function array_sprintf(arr, depth, from, sort_type,    prev_sorted) {
+function sprintfa(arr, depth, from, sort_type,    prev_sorted) {
     # Returns a string representing the (possibly nested)
     # array $arr, optionally in sort_type order as per PROCINFO["sorted_in"]
     # and optionally starting at the $from level of subarrays until the $depth
@@ -445,7 +445,7 @@ function _array_copy_rec(source, dest, depth, from,    idx) {
 
 }
 
-function array_copy(source, dest, depth, from) {
+function copy(source, dest, depth, from) {
     # Make a copy of the $source array in the $dest array, optinally from
     # the $from level until the $depth level of subarrays. If $from is less
     # than 1, scans from the very level of $arr. $depth must be a positive
@@ -462,7 +462,7 @@ function array_copy(source, dest, depth, from) {
 function array_length(arr,    i, total) {
     # Returns the number of elements in $arr,
     # a supposedly flat array. Subarrays counts
-    # as one element (use array_deep_length for
+    # as one element (use deep_length for
     # the total number of elements holds by $arr).
     total = 0
     for (i in arr)
@@ -486,7 +486,7 @@ function _array_deep_length(arr, depth,    i, total) {
     return total
 }
 
-function array_deep_length(arr, depth) {
+function deep_length(arr, depth) {
     # Returns the number of elements of the (possibly nested) array $arr,
     # optionally until $depth levels of subarrays. $depth must be a positive
     # integer, if less than 1 scans until maximum depth.
@@ -605,7 +605,7 @@ function make_array_record(arr,    i) {
 
 function _equals_rec(arr1, arr2, level,    i) {
     # Private function to check if each value element of $arr1 equals
-    # the corresponding element of $arr2 at the same index
+    # the corresponding value element of $arr2 at the same index
     # Returns 1 if true, else 0.
     # Descends at most $level subarrays.
     # The very level of the arrays is at depth 0.
