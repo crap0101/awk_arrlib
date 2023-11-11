@@ -365,8 +365,23 @@ BEGIN {
     # TEST arrlib::*length
     @dprint("* delete b")
     delete b
-    testing::assert_equal(arrlib::array_length(b), 0, 1, "> test array_length(b) == 0")
     @dprint("* b:") && arrlib::printa(b)
+    testing::assert_equal(arrlib::array_length(b), 0, 1, "> test array_length(b) == 0")
+
+    @dprint("* delete a")
+    delete a
+    a[1]
+    a[2]
+    a[3][1]
+    a[3][2]
+    a[4]
+    @dprint("* a:") && arrlib::printa(a)
+    testing::assert_equal(arrlib::array_length(a), arrlib::deep_length(a, 1), 1, "> test array_length/deep_length(a)")
+    @dprint("* delete a[3]")
+    delete a[3]
+    testing::assert_equal(arrlib::array_length(a), arrlib::deep_length(a, 1), 1, "> test array_length/deep_length(a, 1)")
+    testing::assert_equal(arrlib::array_length(a), arrlib::deep_length(a), 1, "> test array_length/deep_length(a)")
+    
     @dprint("* delete a")
     delete a
     a["foo"] = "vfoo"

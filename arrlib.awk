@@ -476,7 +476,7 @@ function _array_deep_length(arr, depth,    i, total) {
     # The very level of $arr is at depth 0.
     # NOTE: uses recursion.
     if (depth == 0)
-	return 0
+	return 1
     total = 0
     for (i in arr)
 	if (awk::isarray(arr[i]))
