@@ -43,6 +43,7 @@ function _arr_print_rec(arr, outfile, depth, from,    fmt, _fmt, i) {
     }
 }
 
+
 function printa(arr, outfile, depth, from, sort_type,    prev_sorted) {
     # Prints the (possibly nested) array $arr, optionally
     # starting from the $from level of subarrays until the $depth
@@ -70,6 +71,7 @@ function printa(arr, outfile, depth, from, sort_type,    prev_sorted) {
 	close(outfile)
 }
 
+
 function _arr_sprintf_rec(arr, depth, from,    fmt, _fmt, i, out) {
     # Private function to return a string representing the
     # (possibly nested) array $arr optionally starting at
@@ -92,6 +94,7 @@ function _arr_sprintf_rec(arr, depth, from,    fmt, _fmt, i, out) {
     }
     return out
 }
+
 
 function sprintfa(arr, depth, from, sort_type,    prev_sorted) {
     # Returns a string representing the (possibly nested)
@@ -116,6 +119,7 @@ function sprintfa(arr, depth, from, sort_type,    prev_sorted) {
     return out
 }
 
+
 function _get_idx_rec(arr, dest, depth, from,    count, idx) {
     # Private function to get the indexes of the (possibly nested)
     # array $arr from the $from level until the $depth level of subarrays.
@@ -134,6 +138,8 @@ function _get_idx_rec(arr, dest, depth, from,    count, idx) {
     }
     return count
 }
+
+
 function get_idx(arr, dest, depth, from,    count, idx) {
     # Function to get the indexes of the (possibly nested)
     # array $arr from the $from level until the $depth level of subarrays.
@@ -150,6 +156,7 @@ function get_idx(arr, dest, depth, from,    count, idx) {
     return _get_idx_rec(arr, dest, depth, from, count)
 }
 
+
 function _print_idx_rec(arr, outfile, depth, from,    i, idx) {
     # Private function to print the indexes of the (possibly nested)
     # array $arr from the $from level until the $depth level of subarrays.
@@ -165,6 +172,7 @@ function _print_idx_rec(arr, outfile, depth, from,    i, idx) {
 	    _print_idx_rec(arr[idx], outfile, depth-1, from-1)
     }
 }
+
 
 function print_idx(arr, outfile, depth, from,    i, idx) {
     # Prints a string of the indexes of the (possibly nested) array $arr,
@@ -241,7 +249,8 @@ function _sprintf_idx_rec(arr, separator, depth, from,    idx, out, s, empty_val
     }
     return out
 }
-    
+
+
 function sprintf_idx(arr, separator, depth, from) {
     # Returns a string of the indexes (separated by $separator)
     # of the (possibly nested) array $arr, optionally from the $from level
@@ -258,6 +267,7 @@ function sprintf_idx(arr, separator, depth, from) {
 	depth = -1
     return _sprintf_idx_rec(arr, separator, depth, from)
 }
+
 
 function _get_val_rec(arr, dest, depth, from,    count, idx) {
     # Private function to get the values of the (possibly nested) array $arr,
@@ -278,6 +288,7 @@ function _get_val_rec(arr, dest, depth, from,    count, idx) {
     return count
 }
 
+
 function get_val(arr, dest, depth, from,    count, idx) {
     # Function to get the values of the (possibly nested) array $arr, optionally
     # from the $from level of subarrays and optionally until the $depth level
@@ -296,6 +307,7 @@ function get_val(arr, dest, depth, from,    count, idx) {
     return _get_val_rec(arr, dest, depth, from, count)
 }
 
+
 function _print_val_rec(arr, outfile, depth, from,    i, idx) {
     # Private function to print the values of the (possibly nested) array $arr,
     # from the $from level until the $depth level of subarrays.
@@ -311,6 +323,7 @@ function _print_val_rec(arr, outfile, depth, from,    i, idx) {
 	    if (from <= 0)
 		print arr[idx] >> outfile
 }
+
 
 function print_val(arr, outfile, depth, from,    i, idx) {
     # Prints the values of the (possibly nested) array $arr, optionally
@@ -333,6 +346,7 @@ function print_val(arr, outfile, depth, from,    i, idx) {
     if (must_close)
 	close(outfile)
 }
+
 
 function _sprintf_val_rec(arr, separator, depth, from,    idx, out, empty_val) {
     # Private function to print on string the values of the
@@ -372,6 +386,7 @@ function _sprintf_val_rec(arr, separator, depth, from,    idx, out, empty_val) {
     return out
 }
 
+
 function sprintf_val(arr, separator, depth, from,    idx, out) {
     # Returns a string of the values of the (possibly nested) array $arr,
     # separated by $separator, optionally from the $from level
@@ -389,6 +404,59 @@ function sprintf_val(arr, separator, depth, from,    idx, out) {
     return _sprintf_val_rec(arr, separator, depth, from)
 }
 
+
+function _max_val_rec(arr, f, depth, from,    __max, __dest) {
+    # Private function to get the max value from the values of the (possibly nested)
+    # array $arr (see the doc of <max_val> for an indeep explanation).
+    # NOTE: uses recursion.
+    get_val(arr, __dest, depth, from)
+    for (i in __dest) {
+	__max = __dest[i]
+	break
+    }
+    for (i in __dest) {
+	if (@f(__dest[i]) > @f(__max))
+	    __max = __dest[i]
+    }
+    return __max
+}
+
+function max_val(arr, f, depth, from) { #XXX+TODO
+    # Function to get the max value from the values of the (possibly nested)
+    # array $arr, optionally from the $from level of subarrays and optionally
+    # until the $depth level of subarrays. If $from is less than 1, scans from
+    # the very level of $arr. $depth should be a positive integer,
+    # if less than 1 scans until max depth. The very level of $arr is at depth 0.
+    # $f is a function to choose the value's property on which perform the comparison,
+    # (default to the identity function) following the usual rules, see:
+    # https://www.gnu.org/software/gawk/manual/gawk.html#Comparison-Operators-1
+    # NOTE: uses recursion (_max_val_rec).
+    if (! f)
+	f = "awkpot::id"
+    if (! from)
+	from = 0
+    if (! depth)
+	depth = -1
+    return _max_val_rec(arr, f, depth, from)
+}
+
+function __max_val(arr, f,    __max, i) { # COOOPY
+    # https://www.gnu.org/software/gawk/manual/gawk.html#Comparison-Operators-1
+    if (! f)
+	f = "awkpot::id"
+    __max = ""
+    for (i in arr) {
+	__max = arr[i]
+	break
+    }
+    for (i in arr) {
+	if (@f(arr[i]) > @f(__max))
+	    __max = arr[i]
+    }
+    return __max
+}
+
+
 function remove_empty(arr,    idx) {
     # Removes from $arr possibly created
     # empty arrays during copying or slicing.
@@ -400,6 +468,7 @@ function remove_empty(arr,    idx) {
 	    else
 		remove_empty(arr[idx])
 }
+
 
 function remove_unassigned(arr,    idx, i, tmp) {
     # Removes unassigned and untyped values from $arr.
@@ -418,6 +487,7 @@ function remove_unassigned(arr,    idx, i, tmp) {
 		delete arr[idx]
     }
 }
+
 
 function _array_copy_rec(source, dest, depth, from,    idx) {
     # Private function to make a copy of the
@@ -445,6 +515,7 @@ function _array_copy_rec(source, dest, depth, from,    idx) {
 
 }
 
+
 function copy(source, dest, depth, from) {
     # Make a copy of the $source array in the $dest array, optinally from
     # the $from level until the $depth level of subarrays. If $from is less
@@ -459,6 +530,7 @@ function copy(source, dest, depth, from) {
     _array_copy_rec(source, dest, depth, from)
 }
 
+
 function array_length(arr,    i, total) {
     # Returns the number of elements in $arr,
     # a supposedly flat array. Subarrays counts
@@ -469,6 +541,7 @@ function array_length(arr,    i, total) {
 	total += 1
     return total
 }
+
 
 function _array_deep_length(arr, depth,    i, total) {
     # Private function to return the number of elements in $arr,
@@ -486,6 +559,7 @@ function _array_deep_length(arr, depth,    i, total) {
     return total
 }
 
+
 function deep_length(arr, depth) {
     # Returns the number of elements of the (possibly nested) array $arr,
     # optionally until $depth levels of subarrays. $depth must be a positive
@@ -497,6 +571,7 @@ function deep_length(arr, depth) {
     return _array_deep_length(arr, depth)
 }
 
+
 function is_empty(arr,    idx, ret) {
     # Check if $arr is empty, i.e. deleted.
     # Returns 1 if empty, else 0.
@@ -507,6 +582,7 @@ function is_empty(arr,    idx, ret) {
     }
     return ret
 }
+
 
 function _exists_index_deep_rec(arr, index_value, level,    i) {
     # Private function to check if any index of $arr equals $index_value
@@ -526,6 +602,7 @@ function _exists_index_deep_rec(arr, index_value, level,    i) {
     return 0
 }
 
+
 function exists_index_deep(arr, index_value, level) {
     # Returns 1 if any index of $arr equals $index_value, else 0.
     # Optionally descends at most $level subarrays, if level < 1
@@ -537,11 +614,13 @@ function exists_index_deep(arr, index_value, level) {
     return _exists_index_deep_rec(arr, index_value, level)
 }
 
+
 function exists_index(arr, index_value) {
     # Returns 1 if any index of $arr equals $index_value, else 0.
     # Like exists_index_deep, but without subarrays scanning.
     return exists_index_deep(arr, index_value, 1)
 }
+
 
 function _exists_deep_rec(arr, value, level,    i) {
     # Private function to check if any value element of $arr equals $value.
@@ -562,6 +641,7 @@ function _exists_deep_rec(arr, value, level,    i) {
     return 0
 }
 
+
 function exists_deep(arr, value, level) {
     # Returns 1 if any value element of $arr
     # (including subarrays) equals $value, else 0.
@@ -575,11 +655,13 @@ function exists_deep(arr, value, level) {
 
 }
 
+
 function exists(arr, value,    i) {
     # Returns 1 if any value element of $arr equals $value, else 0.
     # Like exists_deep, but without subarrays scanning.
     return exists_deep(arr, value, 1)
 }
+
 
 function exists_record(value, idx_max,    i) {
     # Checks if any field of the current record
@@ -595,6 +677,7 @@ function exists_record(value, idx_max,    i) {
     return 0
 }
 
+
 function make_array_record(arr,    i) {
     # Puts the fields of the current record in arr.
     delete arr
@@ -602,6 +685,7 @@ function make_array_record(arr,    i) {
         arr[i] = $i
     }
 }
+
 
 function _equals_rec(arr1, arr2, level,    i) {
     # Private function to check if each value element of $arr1 equals
@@ -640,6 +724,7 @@ function _equals_rec(arr1, arr2, level,    i) {
     return 1
 }
 
+
 function equals(arr1, arr2, level, check_type) {
     # Checks if each value element of $arr1 (including subarrays) equals
     # the value of the $arr2 element at the same index
@@ -670,12 +755,14 @@ function _uniq(arr, dest,    idx) {
             dest[arr[idx]]
 }
 
+
 function uniq(arr, dest) {
     # Fills $dest array with unique values from $arr array
     # as indexes with unassigned value.
     # NOTE: uses recursion (_uniq).
     _uniq(arr, dest)
 }
+
 
 function _uniq_idx(arr, dest,   idx) {
     # Private (and partial) function for fill $dest array
@@ -689,6 +776,7 @@ function _uniq_idx(arr, dest,   idx) {
             dest[idx]
 }
 
+
 function uniq_idx(arr, dest) {
     # Fills $dest array with unique indexes from the $arr array
     # as indexes with unassigned value.
@@ -699,11 +787,11 @@ function uniq_idx(arr, dest) {
 
 BEGIN {
     if (awk::ARRLIB_DEBUG_LEVEL) {
-	dprint = "awkpot::dprint_real" #awkpot::set_dprint("awkpot::dprint_real")
-	# to set dprint in awkpot functions also (defaults to dprint_fake)
+	dprint = "awkpot::dprint_real"
+	# set dprint in awkpot functions also (defaults to dprint_fake)
 	awkpot::set_dprint(dprint)
     } else {
-	dprint = "awkpot::dprint_fake" #awkpot::set_dprint("awkpot::dprint_fake")
+	dprint = "awkpot::dprint_fake"
     }
     check_equals = "_check_equals"
 }
