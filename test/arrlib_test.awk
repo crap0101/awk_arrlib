@@ -141,17 +141,17 @@ BEGIN {
     testing::assert_equal(bsa, bsc, 1, "> bsa == bsc")
     delete b1; delete bc
     
-    # sprintf_val
+    # sprintf_vals
     _t3 = sys::mktemp("/tmp")
-    arrlib::print_idx(ba, _t3)
+    arrlib::print_idxs(ba, _t3)
     awkpot::read_file_arr(_t3, bf)
     array::deep_flat_idx(ba, bbg)
     asort(bbg)
-    bs = arrlib::sprintf_val(bbg, ":")
-    bs_over = arrlib::sprintf_val(bbg, ":", 1 + arrlib::deep_length(bbg))
-    bs_neg = arrlib::sprintf_val(bbg, ":", 0)
+    bs = arrlib::sprintf_vals(bbg, ":")
+    bs_over = arrlib::sprintf_vals(bbg, ":", 1 + arrlib::deep_length(bbg))
+    bs_neg = arrlib::sprintf_vals(bbg, ":", 0)
     asort(bf)
-    bfs = arrlib::sprintf_val(bf, ":")
+    bfs = arrlib::sprintf_vals(bf, ":")
     testing::assert_equal(bs, bfs, 1, "> bs == bfs")
     testing::assert_equal(bs_over, bfs, 1, "> bs_over == bfs")
     testing::assert_equal(bs, bs_neg, 1, "> bs == bs_neg")
@@ -164,38 +164,38 @@ BEGIN {
     va[2] = ""
     va[3] = 2
     va[4] = ""
-    testing::assert_equal(arrlib::sprintf_val(va, ":"), ":::1:2", 1, "> sprintf_val (empty values) [@val_str_asc]")
+    testing::assert_equal(arrlib::sprintf_vals(va, ":"), ":::1:2", 1, "> sprintf_vals (empty values) [@val_str_asc]")
     awkpot::set_sort_order("@ind_num_asc")
-    testing::assert_equal(arrlib::sprintf_val(va, ":"), ":1::2:", 1, "> sprintf_val (empty values) [@ind_num_asc]")
-    @dprint(sprintf("* vals <%s>\n", arrlib::sprintf_val(va, ":")))
+    testing::assert_equal(arrlib::sprintf_vals(va, ":"), ":1::2:", 1, "> sprintf_vals (empty values) [@ind_num_asc]")
+    @dprint(sprintf("* vals <%s>\n", arrlib::sprintf_vals(va, ":")))
     va[0]=0
     va[4]=4
     @dprint("* set va[0]=0; va[4]=4")
-    testing::assert_equal(arrlib::sprintf_val(va, ":"), "0:1::2:4", 1, "> sprintf_val")
+    testing::assert_equal(arrlib::sprintf_vals(va, ":"), "0:1::2:4", 1, "> sprintf_vals")
     @dprint("* set va[2]=\"due\"")
     va[2]="due"
-    testing::assert_equal(arrlib::sprintf_val(va, ":"), "0:1:due:2:4", 1, "> sprintf_val")
+    testing::assert_equal(arrlib::sprintf_vals(va, ":"), "0:1:due:2:4", 1, "> sprintf_vals")
     va[5][0]=""
     va[5][1]=11
     va[5][2]=""
     va[5][3]
     va[6][0]=""
     va[6][1]=""
-    testing::assert_equal(arrlib::sprintf_val(va, ":"), "0:1:due:2:4::11::::", 1, "> sprintf_val (subarrays)")
+    testing::assert_equal(arrlib::sprintf_vals(va, ":"), "0:1:due:2:4::11::::", 1, "> sprintf_vals (subarrays)")
     delete va
 
-    # sprintf_idx
+    # sprintf_idxs
     va[0] = ""
     va[1] = 1
     va[2] = ""
     va[3] = 2
     va[4] = ""
 
-    testing::assert_equal(arrlib::sprintf_idx(va, ":"), "0:1:2:3:4", 1, "> sprintf_idx")
+    testing::assert_equal(arrlib::sprintf_idxs(va, ":"), "0:1:2:3:4", 1, "> sprintf_idxs")
     testing::assert_equal(arrlib::array_length(va), 5, 1, "(length) va == 5")
     va[""]="null"
     testing::assert_true(("" in va), 1, "> null in va?")
-    testing::assert_equal(arrlib::sprintf_idx(va, ":"), ":0:1:2:3:4", 1, "> sprintf_idx (empty index)")
+    testing::assert_equal(arrlib::sprintf_idxs(va, ":"), ":0:1:2:3:4", 1, "> sprintf_idxs (empty index)")
     testing::assert_equal(arrlib::array_length(va), 6, 1, "(length) va == 6")
     va[5][0]=""
     va[5][1]=11
@@ -203,13 +203,13 @@ BEGIN {
     va[5][3]
     va[6][0]=""
     va[6][1]=""
-    testing::assert_equal(arrlib::sprintf_idx(va, ":"), ":0:1:2:3:4:5:0:1:2:3:6:0:1", 1, "> sprintf_idx (subarrays)")
+    testing::assert_equal(arrlib::sprintf_idxs(va, ":"), ":0:1:2:3:4:5:0:1:2:3:6:0:1", 1, "> sprintf_idxs (subarrays)")
     delete va[""]
 
     awkpot::set_sort_order(_pv)
     delete va
     
-    bs1 = arrlib::sprintf_idx(bbg, ":")
+    bs1 = arrlib::sprintf_idxs(bbg, ":")
     bs2 = ""
     for (i=arrlib::array_length(bbg); i>1; i--)
 	bs2 = bs2 i ":"
@@ -231,13 +231,13 @@ BEGIN {
     sys::rm(_t1)
     sys::rm(_t2)
     
-    # sprintf_val
+    # sprintf_vals
     _t3 = sys::mktemp("/tmp")
-    arrlib::print_val(ba, _t3, 2)
+    arrlib::print_vals(ba, _t3, 2)
     awkpot::read_file_arr(_t3, ba_read)
     @dprint("* ba_read:") && arrlib::printa(ba_read)
     asort(ba_read)
-    ba_str = arrlib::sprintf_val(ba_read, ":")
+    ba_str = arrlib::sprintf_vals(ba_read, ":")
     arrlib::copy(ba, ba_pcopy, 2)
     @dprint("* ba_pcopy:") && arrlib::printa(ba_pcopy)
     sys::rm(_t3)
@@ -246,73 +246,73 @@ BEGIN {
     array::deep_flat(ba_pcopy, ba_flat)
     @dprint("* ba_flat:") && arrlib::printa(ba_flat)
     asort(ba_flat)
-    ba_flat_str = arrlib::sprintf_val(ba_flat, ":")
+    ba_flat_str = arrlib::sprintf_vals(ba_flat, ":")
     @dprint(sprintf("* ba_str: <%s>", ba_str))
     @dprint(sprintf("* ba_flat_str: <%s>", ba_flat_str))
     testing::assert_equal(ba_str, ba_flat_str, 1, "> ba_str == ba_flat_str")
 
-    # sprintf_idx, sprintf_val (slices)
+    # sprintf_idxs, sprintf_vals (slices)
     @dprint("* bg:") && arrlib::printa(bg)
-    bgstr = arrlib::sprintf_idx(bg, ":", 2)
+    bgstr = arrlib::sprintf_idxs(bg, ":", 2)
     @dprint(sprintf("* bgstr: <%s>", bgstr))
     split(bgstr, bgs, ":")
     asort(bgs)
     test_bgs = "A:0:1:2:B:C:D:1:2:C1:E"
     split(test_bgs, bgt, ":")
     asort(bgt)
-    testing::assert_true(arrlib::equals(bgs, bgt), 1, "> sprintf_idx (depth=2): bgs == bgt")
+    testing::assert_true(arrlib::equals(bgs, bgt), 1, "> sprintf_idxs (depth=2): bgs == bgt")
 
-    bgvstr = arrlib::sprintf_val(bg, ":", 2)
+    bgvstr = arrlib::sprintf_vals(bg, ":", 2)
     split(bgvstr, bgvs, ":")
     asort(bgvs)
     test_bgv = "0:1::9:B1:B2"
     split(test_bgv, bgv, ":")
     asort(bgv)
-    testing::assert_true(arrlib::equals(bgvs, bgv), 1, "> sprintf_val (depth=2): bgvs == bgv")
+    testing::assert_true(arrlib::equals(bgvs, bgv), 1, "> sprintf_vals (depth=2): bgvs == bgv")
 
     delete bd;delete be;delete bf
     delete bgs; delete bgt; delete bgvs; delete bgv
     delete ba_read;delete ba_pcopy;delete ba_flat; delete ba_flat2
 
-    bastr = arrlib::sprintf_idx(bg, ":", 3, 1)
+    bastr = arrlib::sprintf_idxs(bg, ":", 3, 1)
     @dprint(sprintf("* bastr: <%s>", bastr))
     split(bastr, bas, ":")
     asort(bas)
     test_bas = "1:2:C1:E:0:2:3:F"
     split(test_bas, bat, ":")
     asort(bat)
-    testing::assert_true(arrlib::equals(bas, bat), 1, "> sprintf_idx (depth=3, from=1): bas == bat")
+    testing::assert_true(arrlib::equals(bas, bat), 1, "> sprintf_idxs (depth=3, from=1): bas == bat")
 
-    bavstr = arrlib::sprintf_val(bg, ":", 3, 1)
+    bavstr = arrlib::sprintf_vals(bg, ":", 3, 1)
     split(bavstr, bavs, ":")
     asort(bavs)
     test_bav = "B1:B2:C1-0:C1-2:C1-3"
     split(test_bav, bav, ":")
     asort(bav)
-    testing::assert_true(arrlib::equals(bavs, bav), 1, "> sprintf_val (depth=3, from =1): bavs == bav")
+    testing::assert_true(arrlib::equals(bavs, bav), 1, "> sprintf_vals (depth=3, from =1): bavs == bav")
     delete bas; delete bat; delete bavs; delete bav
 
     _t1 = sys::mktemp("/tmp")
-    arrlib::print_idx(a, _t1)
+    arrlib::print_idxs(a, _t1)
     awkpot::read_file_arr(_t1, _c)
     awk::asort(_c)
     array::deep_flat_idx(a, _a)
     awk::asort(_a)
-    @dprint(sprintf("* indexes from _a: <%s>", arrlib::sprintf_val(_a, ":")))
-    @dprint(sprintf("* indexes from _c: <%s>", arrlib::sprintf_val(_c, ":")))
-    testing::assert_equal(arrlib::sprintf_val(_a, ":"), arrlib::sprintf_val(_c, ":"),
+    @dprint(sprintf("* indexes from _a: <%s>", arrlib::sprintf_vals(_a, ":")))
+    @dprint(sprintf("* indexes from _c: <%s>", arrlib::sprintf_vals(_c, ":")))
+    testing::assert_equal(arrlib::sprintf_vals(_a, ":"), arrlib::sprintf_vals(_c, ":"),
 			  1, "> (idx from _a) == (idx from _c)")
     sys::rm(_t1)
     
     _t1 = sys::mktemp("/tmp")
-    arrlib::print_val(a, _t1)
+    arrlib::print_vals(a, _t1)
     awkpot::read_file_arr(_t1, _d)
     awk::asort(_d)
     array::deep_flat(a, _b)    
     awk::asort(_b)
-    @dprint(sprintf("* indexes from _b: <%s>", arrlib::sprintf_val(_b, ":")))
-    @dprint(sprintf("* indexes from _d: <%s>", arrlib::sprintf_val(_d, ":")))
-    testing::assert_equal(arrlib::sprintf_val(_b, ":"), arrlib::sprintf_val(_d, ":"), 1,
+    @dprint(sprintf("* indexes from _b: <%s>", arrlib::sprintf_vals(_b, ":")))
+    @dprint(sprintf("* indexes from _d: <%s>", arrlib::sprintf_vals(_d, ":")))
+    testing::assert_equal(arrlib::sprintf_vals(_b, ":"), arrlib::sprintf_vals(_d, ":"), 1,
 			  "> (val from _b) == (val from _d)")
     @dprint("* set_sort_order(_prev_order)")
     awkpot::set_sort_order(_prev_order)
@@ -576,20 +576,20 @@ BEGIN {
     testing::assert_equal(arrlib::deep_length(bd), arrlib::deep_length(bb), 1, "> (len) bd == (len) bb)")
     testing::assert_true(arrlib::equals(bb, bd), 1, "> arrlib::equals(bd, bb)")
     
-    # TEST get_idx / get_val
+    # TEST get_idxs / get_vals
     delete idxarr
-    @dprint("* test get_idx:")
+    @dprint("* test get_idxs:")
     @dprint("* bg:") && arrlib::printa(bg)
-    count = arrlib::get_idx(bg, idxarr)
+    count = arrlib::get_idxs(bg, idxarr)
 
     @dprint("* idxarr:") && arrlib::printa(idxarr)
-    idxstr = arrlib::sprintf_val(idxarr, ":")
+    idxstr = arrlib::sprintf_vals(idxarr, ":")
     @dprint(sprintf("* idxstr: <%s>", idxstr))
     testing::assert_equal(count, arrlib::array_length(idxarr), 1, "> (idxarr) count == length")
 
-    count = arrlib::get_val(idxarr, valarr)
+    count = arrlib::get_vals(idxarr, valarr)
     @dprint("* valarr:") && arrlib::printa(valarr)
-    valstr = arrlib::sprintf_val(valarr, ":")
+    valstr = arrlib::sprintf_vals(valarr, ":")
     @dprint(sprintf("* valstr: <%s>", valstr))
     testing::assert_equal(count, arrlib::array_length(valarr), 1, "> (valarr) count == length")
 
@@ -603,20 +603,20 @@ BEGIN {
 
     for (i=50; i<100; i++)
 	chrarr[i] = sprintf("%c", i)
-    idxstr_cmp = arrlib::sprintf_idx(chrarr, ":")
-    valstr_cmp = arrlib::sprintf_val(chrarr, ":")
+    idxstr_cmp = arrlib::sprintf_idxs(chrarr, ":")
+    valstr_cmp = arrlib::sprintf_vals(chrarr, ":")
 
     @dprint("* chrarr:") && arrlib::printa(chrarr)
-    count = arrlib::get_idx(chrarr, idxarr)
+    count = arrlib::get_idxs(chrarr, idxarr)
     @dprint("* idxarr:") && arrlib::printa(idxarr)
-    idxstr = arrlib::sprintf_val(idxarr, ":")
+    idxstr = arrlib::sprintf_vals(idxarr, ":")
     @dprint(sprintf("* idxstr: <%s>", idxstr))
     testing::assert_equal(count, arrlib::array_length(idxarr), 1, "> (idxarr) count == length")
     testing::assert_equal(idxstr, idxstr_cmp, 1, "> idxstr == idxstr_cmp")
 
-    count = arrlib::get_val(chrarr, valarr)
+    count = arrlib::get_vals(chrarr, valarr)
     @dprint("* valarr:") && arrlib::printa(valarr)
-    valstr = arrlib::sprintf_val(valarr, ":")
+    valstr = arrlib::sprintf_vals(valarr, ":")
     @dprint(sprintf("* valstr: <%s>", valstr))
     testing::assert_equal(count, arrlib::array_length(valarr), 1, "> (valarr) count == length")
     testing::assert_equal(valstr, valstr_cmp, 1, "> valstr == valstr_cmp")
@@ -627,16 +627,16 @@ BEGIN {
     delete chrarr[56]
     delete valarr
     delete idxarr
-    idxstr_cmp = arrlib::sprintf_idx(chrarr, ":")
-    valstr_cmp = arrlib::sprintf_val(chrarr, ":")
-    count = arrlib::get_idx(chrarr, idxarr)
-    idxstr = arrlib::sprintf_val(idxarr, ":")
+    idxstr_cmp = arrlib::sprintf_idxs(chrarr, ":")
+    valstr_cmp = arrlib::sprintf_vals(chrarr, ":")
+    count = arrlib::get_idxs(chrarr, idxarr)
+    idxstr = arrlib::sprintf_vals(idxarr, ":")
     @dprint(sprintf("* idxstr: <%s>", idxstr))
     testing::assert_equal(count, arrlib::array_length(idxarr), 1, "> (idxarr) count == length")
     testing::assert_equal(idxstr, idxstr_cmp, 1, "> idxstr == idxstr_cmp")
 
-    count = arrlib::get_val(chrarr, valarr)
-    valstr = arrlib::sprintf_val(valarr, ":")
+    count = arrlib::get_vals(chrarr, valarr)
+    valstr = arrlib::sprintf_vals(valarr, ":")
     @dprint(sprintf("* valstr: <%s>", valstr))
     testing::assert_equal(count, arrlib::array_length(valarr), 1, "> (valarr) count == length")
     testing::assert_equal(valstr, valstr_cmp, 1, "> valstr == valstr_cmp")
@@ -653,8 +653,8 @@ BEGIN {
     a[2][3][4][5][6][7][8][9] = "nine"
     @dprint("* a:") && arrlib::printa(a)
 
-    idx_count = arrlib::get_idx(a, idxarr)
-    val_count = arrlib::get_val(a, valarr)
+    idx_count = arrlib::get_idxs(a, idxarr)
+    val_count = arrlib::get_vals(a, valarr)
 
     @dprint("* idxarr:") && arrlib::printa(idxarr)
     @dprint("* valarr:") && arrlib::printa(valarr)
@@ -675,8 +675,8 @@ BEGIN {
     a[5][55][555][5555][55555][555555]
     @dprint("* a:") && arrlib::printa(a)
 
-    idx_count = arrlib::get_idx(a, idxarr)
-    val_count = arrlib::get_val(a, valarr)
+    idx_count = arrlib::get_idxs(a, idxarr)
+    val_count = arrlib::get_vals(a, valarr)
 
     @dprint("* idxarr:") && arrlib::printa(idxarr)
     @dprint("* valarr:") && arrlib::printa(valarr)
@@ -708,8 +708,8 @@ BEGIN {
     @dprint("* uniq_idx...")
     arrlib::uniq_idx(__arr, dest_i)
     @dprint("* dest_i (uniq_idx):") && arrlib::printa(dest_i)
-    testing::assert_equal(arrlib::sprintf_idx(dest, ":"), "0:2:4:10:20:30:40:50", 1, "> uniq test dest (1)")
-    testing::assert_equal(arrlib::sprintf_idx(dest_i, ":"), "0:1:2:3:4", 1, "> uniq_idx test dest_i (1)")
+    testing::assert_equal(arrlib::sprintf_idxs(dest, ":"), "0:2:4:10:20:30:40:50", 1, "> uniq test dest (1)")
+    testing::assert_equal(arrlib::sprintf_idxs(dest_i, ":"), "0:1:2:3:4", 1, "> uniq_idx test dest_i (1)")
 
     # check all values are unassigned:
         arrlib::uniq(dest, dest_v)
@@ -737,8 +737,8 @@ BEGIN {
     @dprint("* uniq_idx...")
     arrlib::uniq_idx(__arr, dest_i)
     @dprint("* dest_i (uniq_idx):") && arrlib::printa(dest_i)
-    testing::assert_equal(arrlib::sprintf_idx(dest, ":"), "0:1", 1, "> uniq test dest (2)")
-    testing::assert_equal(arrlib::sprintf_idx(dest_i, ":"), "0:1:2:3:4", 1, "> uniq_idx test dest_i (2)")
+    testing::assert_equal(arrlib::sprintf_idxs(dest, ":"), "0:1", 1, "> uniq test dest (2)")
+    testing::assert_equal(arrlib::sprintf_idxs(dest_i, ":"), "0:1:2:3:4", 1, "> uniq_idx test dest_i (2)")
 
     # check all values are unassigned:
     arrlib::uniq(dest, dest_v)

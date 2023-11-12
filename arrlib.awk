@@ -120,7 +120,7 @@ function sprintfa(arr, depth, from, sort_type,    prev_sorted) {
 }
 
 
-function _get_idx_rec(arr, dest, depth, from,    count, idx) {
+function _get_idxs_rec(arr, dest, depth, from,    count, idx) {
     # Private function to get the indexes of the (possibly nested)
     # array $arr from the $from level until the $depth level of subarrays.
     # The very level of $arr is at depth 0.
@@ -134,30 +134,30 @@ function _get_idx_rec(arr, dest, depth, from,    count, idx) {
 	if (from <= 0)
 	    dest[count++] = idx
 	if (awk::isarray(arr[idx]))
-	    count = _get_idx_rec(arr[idx], dest, depth-1, from-1, count)
+	    count = _get_idxs_rec(arr[idx], dest, depth-1, from-1, count)
     }
     return count
 }
 
 
-function get_idx(arr, dest, depth, from,    count, idx) {
+function get_idxs(arr, dest, depth, from,    count, idx) {
     # Function to get the indexes of the (possibly nested)
     # array $arr from the $from level until the $depth level of subarrays.
     # The very level of $arr is at depth 0.
     # Indexes are stored in the $dest array as values.
     # $dest indexes starts from 0.
     # Returns the total number of indexes.
-    # NOTE: uses recursion (_get_idx_rec).
+    # NOTE: uses recursion (_get_idxs_rec).
     if (! from)
 	from = 0
     if (! depth)
 	depth = -1
     count = 0
-    return _get_idx_rec(arr, dest, depth, from, count)
+    return _get_idxs_rec(arr, dest, depth, from, count)
 }
 
 
-function _print_idx_rec(arr, outfile, depth, from,    i, idx) {
+function _print_idxs_rec(arr, outfile, depth, from,    i, idx) {
     # Private function to print the indexes of the (possibly nested)
     # array $arr from the $from level until the $depth level of subarrays.
     # The very level of $arr is at depth 0.
@@ -169,12 +169,12 @@ function _print_idx_rec(arr, outfile, depth, from,    i, idx) {
 	if (from <= 0)
 	    print idx >> outfile
 	if (awk::isarray(arr[idx]))
-	    _print_idx_rec(arr[idx], outfile, depth-1, from-1)
+	    _print_idxs_rec(arr[idx], outfile, depth-1, from-1)
     }
 }
 
 
-function print_idx(arr, outfile, depth, from,    i, idx) {
+function print_idxs(arr, outfile, depth, from,    i, idx) {
     # Prints a string of the indexes of the (possibly nested) array $arr,
     # optionally from the $from level of subarrays and optionally until
     # the $depth level of subarrays. If $from is less than 1, starts from
@@ -182,7 +182,7 @@ function print_idx(arr, outfile, depth, from,    i, idx) {
     # less than 1 scans at the maximum depth.
     # The very level of $arr is at depth 0.
     # Write on $outfile (if false, default to stdout).
-    # NOTE: uses recursion (_print_idx_rec).
+    # NOTE: uses recursion (_print_idxs_rec).
     if (! from)
 	from = 0
     if (! depth)
@@ -192,12 +192,12 @@ function print_idx(arr, outfile, depth, from,    i, idx) {
 	outfile = "/dev/stdout"
 	must_close = 0
     }
-    _print_idx_rec(arr, outfile, depth, from)
+    _print_idxs_rec(arr, outfile, depth, from)
     if (must_close)
 	close(outfile)
 }
 
-function _sprintf_idx_rec(arr, separator, depth, from,    idx, out, s, empty_val) {
+function _sprintf_idxs_rec(arr, separator, depth, from,    idx, out, s, empty_val) {
     # Private function to print on string the indeces of $arr
     # joined by $separator, optionally from the $from level
     # until the $depth level of subarrays.
@@ -211,20 +211,20 @@ function _sprintf_idx_rec(arr, separator, depth, from,    idx, out, s, empty_val
 	if (awk::isarray(arr[idx])) {
 	    if (from > 0) {
 		if (out) {
-		    s = _sprintf_idx_rec(arr[idx], separator, depth-1, from-1)
+		    s = _sprintf_idxs_rec(arr[idx], separator, depth-1, from-1)
 		    if (s)
 			out = out separator s
 		} else
-		    out = _sprintf_idx_rec(arr[idx], separator, depth-1, from-1)
+		    out = _sprintf_idxs_rec(arr[idx], separator, depth-1, from-1)
 	    } else {
 		if (out) {
-		    s = _sprintf_idx_rec(arr[idx], separator, depth-1, from-1)
+		    s = _sprintf_idxs_rec(arr[idx], separator, depth-1, from-1)
 		    if (s)
 			out = out separator idx separator s
 		    else
 			out = out separator idx
 		} else {
-		    s = _sprintf_idx_rec(arr[idx], separator, depth-1, from-1)
+		    s = _sprintf_idxs_rec(arr[idx], separator, depth-1, from-1)
 		    if (s)
 			out = out idx separator s
 		    else
@@ -251,25 +251,25 @@ function _sprintf_idx_rec(arr, separator, depth, from,    idx, out, s, empty_val
 }
 
 
-function sprintf_idx(arr, separator, depth, from) {
+function sprintf_idxs(arr, separator, depth, from) {
     # Returns a string of the indexes (separated by $separator)
     # of the (possibly nested) array $arr, optionally from the $from level
     # until the $depth level of subarrays. If $from is less than 1, starts
     # from the very level of $arr. $depth should be a positive integer. If
     # less than 1, scans until maximum depth.
     # The very level of $arr is at depth 0.
-    # NOTE: uses recursion (_sprintf_idx_rec).
+    # NOTE: uses recursion (_sprintf_idxs_rec).
     if (! separator)
 	separator = ""
     if (! from)
 	from = 0
     if (! depth)
 	depth = -1
-    return _sprintf_idx_rec(arr, separator, depth, from)
+    return _sprintf_idxs_rec(arr, separator, depth, from)
 }
 
 
-function _get_val_rec(arr, dest, depth, from,    count, idx) {
+function _get_vals_rec(arr, dest, depth, from,    count, idx) {
     # Private function to get the values of the (possibly nested) array $arr,
     # from the $from level until the $depth level of subarrays.
     # The very level of $arr is at depth 0.
@@ -281,7 +281,7 @@ function _get_val_rec(arr, dest, depth, from,    count, idx) {
 	return count
     for (idx in arr)
 	if (awk::isarray(arr[idx]))
-	    count = _get_val_rec(arr[idx], dest, depth-1, from-1, count)
+	    count = _get_vals_rec(arr[idx], dest, depth-1, from-1, count)
 	else
 	    if (from <= 0)
 		dest[count++] = arr[idx]
@@ -289,7 +289,7 @@ function _get_val_rec(arr, dest, depth, from,    count, idx) {
 }
 
 
-function get_val(arr, dest, depth, from,    count, idx) {
+function get_vals(arr, dest, depth, from,    count, idx) {
     # Function to get the values of the (possibly nested) array $arr, optionally
     # from the $from level of subarrays and optionally until the $depth level
     # of subarrays. If $from is less than 1, scans from the very level of $arr.
@@ -298,17 +298,17 @@ function get_val(arr, dest, depth, from,    count, idx) {
     # Values are stored in the $dest array as values.
     # $dest indexes starts from 0.
     # Returns the total number of values.
-    # NOTE: uses recursion (_get_val_rec).
+    # NOTE: uses recursion (_get_vals_rec).
     if (! from)
 	from = 0
     if (! depth)
 	depth = -1
     count = 0
-    return _get_val_rec(arr, dest, depth, from, count)
+    return _get_vals_rec(arr, dest, depth, from, count)
 }
 
 
-function _print_val_rec(arr, outfile, depth, from,    i, idx) {
+function _print_vals_rec(arr, outfile, depth, from,    i, idx) {
     # Private function to print the values of the (possibly nested) array $arr,
     # from the $from level until the $depth level of subarrays.
     # The very level of $arr is at depth 0.
@@ -318,21 +318,21 @@ function _print_val_rec(arr, outfile, depth, from,    i, idx) {
 	return
     for (idx in arr)
 	if (awk::isarray(arr[idx]))
-	    _print_val_rec(arr[idx], outfile, depth-1, from-1)
+	    _print_vals_rec(arr[idx], outfile, depth-1, from-1)
 	else
 	    if (from <= 0)
 		print arr[idx] >> outfile
 }
 
 
-function print_val(arr, outfile, depth, from,    i, idx) {
+function print_vals(arr, outfile, depth, from,    i, idx) {
     # Prints the values of the (possibly nested) array $arr, optionally
     # from the $from level of subarrays and optionally until the $depth level
     # of subarrays. If $from is less than 1, scans from the very level of $arr.
     # $depth should be a positive integer, if less than 1 scans until max depth.
     # The very level of $arr is at depth 0.
     # Write on $outfile (if false, default to stdout).
-    # NOTE: uses recursion (_print_val_rec).
+    # NOTE: uses recursion (_print_vals_rec).
     if (! from)
 	from = 0
     if (! depth)
@@ -342,13 +342,13 @@ function print_val(arr, outfile, depth, from,    i, idx) {
 	outfile = "/dev/stdout"
 	must_close = 0
     }
-    _print_val_rec(arr, outfile, depth, from)
+    _print_vals_rec(arr, outfile, depth, from)
     if (must_close)
 	close(outfile)
 }
 
 
-function _sprintf_val_rec(arr, separator, depth, from,    idx, out, empty_val) {
+function _sprintf_vals_rec(arr, separator, depth, from,    idx, out, empty_val) {
     # Private function to print on string the values of the
     # (possibly nested) array $arr, joined with $separator, optionally
     # from the $from level until the $depth level of subarrays.
@@ -362,11 +362,11 @@ function _sprintf_val_rec(arr, separator, depth, from,    idx, out, empty_val) {
     for (idx in arr) {
 	if (awk::isarray(arr[idx])) {
 	    if (out) {
-		s = _sprintf_val_rec(arr[idx], separator, depth-1, from-1)
+		s = _sprintf_vals_rec(arr[idx], separator, depth-1, from-1)
 		if (s)
 		    out = out separator s
 	    } else
-		out = _sprintf_val_rec(arr[idx], separator, depth-1, from-1)
+		out = _sprintf_vals_rec(arr[idx], separator, depth-1, from-1)
 	} else {
 	    if (from <= 0) {
 		if (! out) {
@@ -387,29 +387,29 @@ function _sprintf_val_rec(arr, separator, depth, from,    idx, out, empty_val) {
 }
 
 
-function sprintf_val(arr, separator, depth, from,    idx, out) {
+function sprintf_vals(arr, separator, depth, from,    idx, out) {
     # Returns a string of the values of the (possibly nested) array $arr,
     # separated by $separator, optionally from the $from level
     # until the $depth level of subarrays. If $from is less than 1, scans from
     # the very level of $arr. $depth should be a positive integer,
     # if less than 1 scans until maximum depth.
     # The very level of $arr is at depth 0.
-    # NOTE: uses recursion (_sprintf_val_rec).
+    # NOTE: uses recursion (_sprintf_vals_rec).
     if (! separator)
 	separator = ""
     if (! from)
 	from = 0
     if (! depth)
 	depth = -1
-    return _sprintf_val_rec(arr, separator, depth, from)
+    return _sprintf_vals_rec(arr, separator, depth, from)
 }
 
 
 function _max_val_rec(arr, f, depth, from,    __max, __dest) {
     # Private function to get the max value from the values of the (possibly nested)
     # array $arr (see the doc of <max_val> for an indeep explanation).
-    # NOTE: uses recursion.
-    get_val(arr, __dest, depth, from)
+    # NOTE: uses recursion (get_vals).
+    get_vals(arr, __dest, depth, from)
     for (i in __dest) {
 	__max = __dest[i]
 	break
@@ -421,7 +421,11 @@ function _max_val_rec(arr, f, depth, from,    __max, __dest) {
     return __max
 }
 
-function max_val(arr, f, depth, from) { #XXX+TODO
+# XXX+TODO: generalize comparisons to make max_(val|idx), min_(val|idx),
+# etc... filter function and so on.
+# XXX+TODO: pop/push function...
+
+function max_val(arr, f, depth, from) {
     # Function to get the max value from the values of the (possibly nested)
     # array $arr, optionally from the $from level of subarrays and optionally
     # until the $depth level of subarrays. If $from is less than 1, scans from
@@ -438,22 +442,6 @@ function max_val(arr, f, depth, from) { #XXX+TODO
     if (! depth)
 	depth = -1
     return _max_val_rec(arr, f, depth, from)
-}
-
-function __max_val(arr, f,    __max, i) { # COOOPY
-    # https://www.gnu.org/software/gawk/manual/gawk.html#Comparison-Operators-1
-    if (! f)
-	f = "awkpot::id"
-    __max = ""
-    for (i in arr) {
-	__max = arr[i]
-	break
-    }
-    for (i in arr) {
-	if (@f(arr[i]) > @f(__max))
-	    __max = arr[i]
-    }
-    return __max
 }
 
 
