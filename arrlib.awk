@@ -39,6 +39,7 @@ function _arr_print_rec(arr, outfile, depth, from,    fmt, _fmt, i) {
         else {
 	    if (from <= 0)
 		printf("arr%s[%s] = %s\n", fmt, i, arr[i]) >> outfile
+		#printf("arr%s[%s] = %s (%s)\n", fmt, i, arr[i], awk::typeof(arr[i])) >> outfile
 	}
     }
 }
@@ -422,8 +423,9 @@ function _max_val_rec(arr, f, depth, from,    __max, __dest) {
 }
 
 # XXX+TODO: generalize comparisons to make max_(val|idx), min_(val|idx),
-# etc... filter function and so on.
+# etc... filter function and so on. (maybe in awkpot)
 # XXX+TODO: pop/push function...
+# XXX+TODO: no _rec functions...find a way
 
 function max_val(arr, f, depth, from) {
     # Function to get the max value from the values of the (possibly nested)
@@ -460,13 +462,18 @@ function remove_empty(arr,    idx) {
 
 function remove_unassigned(arr,    idx, i, tmp) {
     # Removes unassigned and untyped values from $arr.
+    # XXX+NOTE: don't rely too mach on values previously unassigned or untyped,
+    # because by simply accessing them they can become strings (at least in gawk 5.3.0).
+    # See also the note at https://www.gnu.org/software/gawk/manual/gawk.html#Getting-Type-Information
     # NOTE: uses recursion.
     for (idx in arr) {
+	#if (! awk::isarray(arr[idx]))
+	#    printf "UUUUUUUUUUUU [%s] <%s> (%s)\n", idx, arr[idx], awk::typeof(arr[idx])
 	if (awk::isarray(arr[idx]))
 	    remove_unassigned(arr[idx])
         # double check for gawk verion < 5.2
-	if (awk::typeof(arr[idx]) == "unassigned" || awk::typeof(arr[idx]) == "untyped")
-	    delete arr[idx]
+	else if (awk::typeof(arr[idx]) == "unassigned" || awk::typeof(arr[idx]) == "untyped")
+	    delete arr[idx]	
     }
     # remove possibly empty arrays after removal of unassigned values
     for (idx in arr) {
@@ -494,8 +501,9 @@ function _array_copy_rec(source, dest, depth, from,    idx) {
 	    delete dest[idx]["fake"]
 	    _array_copy_rec(source[idx], dest[idx], depth-1, from-1)
 	} else {
-	    if (from <= 0)
+	    if (from <= 0) {
 		dest[idx] = source[idx]
+	    }
 	}
     }
     # to remove possibly created empty arrays ($depth reached)
@@ -693,7 +701,7 @@ function _equals_rec(arr1, arr2, level,    i) {
     for (i in arr2)
      	if (! (i in arr1))
      	    return 0
-    # ...end of boilerplate code (for now ^L^)    
+    # ...end of boilerplate code (for now ^L^)
     for (i in arr1) {
 	if (awk::isarray(arr1[i])) {
 	    if (! awk::isarray(arr2[i]))
