@@ -462,9 +462,8 @@ function remove_empty(arr,    idx) {
 
 function remove_unassigned(arr,    idx, i, tmp) {
     # Removes unassigned and untyped values from $arr.
-    # XXX+NOTE: don't rely too mach on values previously unassigned or untyped,
-    # because by simply accessing them they can become strings (at least in gawk 5.3.0).
-    # See also the note at https://www.gnu.org/software/gawk/manual/gawk.html#Getting-Type-Information
+    # XXX+NOTE: maybe a bug in gawk 5.3.0,
+    # see https://lists.gnu.org/archive/html/bug-gawk/2023-11/msg00012.html
     # NOTE: uses recursion.
     for (idx in arr) {
 	#if (! awk::isarray(arr[idx]))

@@ -10,7 +10,6 @@
 @load "sysutils"
 # https://github.com/crap0101/awk_sysutils
 
-# XXX+TODO: check test for gawk 5.3.0
 
 function _rec(arr,    i) {
     # ricorsione infinita...
@@ -561,8 +560,9 @@ BEGIN {
     @dprint("* ba:") && arrlib::printa(ba)
     @dprint("* bb:") && arrlib::printa(bb)
     @dprint("* bc:") && arrlib::printa(bb)
-    # NOTE_1: on gawk 5.3.0 (maybe also in some version before this, down to 5.1.0)
+    # XXX+NOTE_1: on gawk 5.3.0 (maybe also in some version before this, down to 5.1.0)
     # unassigned values becomes string! So, skip this test...
+    # see https://lists.gnu.org/archive/html/bug-gawk/2023-11/msg00012.html
     if (awkpot::cmp_version(awkpot::get_version(), "5.3.0", "awkpot::lt"))
 	testing::assert_false(arrlib::equals(bb, bc), 1, "> ! arrlib::equals(bc, bb)")
 
