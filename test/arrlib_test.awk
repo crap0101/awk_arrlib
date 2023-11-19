@@ -782,15 +782,26 @@ BEGIN {
 	    testing::assert_equal(typeof(dest_v[i]), "untyped", 1, "> uniq dest_v type (4)")
     awkpot::set_sort_order(_prev_order)
 
-    # TEST max_val
-    @dprint("* test max_val")
+    # TEST max_val / min_val / max_idx / min_idx
+    @dprint("* test max_val / min_val")
     delete __arr
     top = 5
     for (i=0;i<=top;i++)
         __arr[i]=i
     testing::assert_equal(top, arrlib::max_val(__arr), 1, "> max_val")
-    __arr[10] = 100
-    testing::assert_equal(100, arrlib::max_val(__arr), 1, "> max_val (add max value)")
+    testing::assert_equal(0, arrlib::min_val(__arr), 1, "> min_val")
+    testing::assert_equal(top, arrlib::max_idx(__arr), 1, "> max_idx")
+    testing::assert_equal(0, arrlib::min_idx(__arr), 1, "> min_idx")
+
+    # NOTE: indexes are stored as string, so comparison must be take this fact in consideration.
+    __arr[-2] = 100
+    __arr[9999] = -7 # choosed a value which is surely max as a string
+    testing::assert_equal(__arr[-2], arrlib::max_val(__arr), 1, "> max_val (add max value)")
+    testing::assert_equal(__arr[9999], arrlib::min_val(__arr), 1, "> min_val (add min value)")
+
+    testing::assert_equal(9999, arrlib::max_idx(__arr), 1, "> max_idx (add max idx)")
+    testing::assert_equal(-2, arrlib::min_idx(__arr), 1, "> min_idx (add min idx)")
+
     jtop = 44
     for (j=jtop; j >= 11; j/=2)
 	for (i=top;i>=0;i--)
@@ -802,23 +813,47 @@ BEGIN {
     a[0]="z"
     a[1]="foobar"
     a[2]="bar"
-    a[3]="1"
+    a[3]="12"
     a[4][1]="11"
     a[4][2]="foobar"
     a[4][3][1]="zoo"
+    a[4][3][2]="1"
     a[4][4]="foo"
     testing::assert_equal("zoo", arrlib::max_val(a), 1, "> max_val (str, id)")
-    testing::assert_equal("z", arrlib::max_val(a, "", 1), 1, "> max_val (str, id, depth=1)")
-    testing::assert_equal("zoo", arrlib::max_val(a, "", 0, 1), 1, "> max_val (str, id, from=1)")
-    testing::assert_equal("foobar", arrlib::max_val(a, "awkpot::len"), 1, "> max_val (str, len)")
+    testing::assert_equal("1", arrlib::min_val(a), 1, "> min_val (str, id)")
 
+    testing::assert_equal("z", arrlib::max_val(a, "", 1), 1, "> max_val (str, id, depth=1)")
+    testing::assert_equal("12", arrlib::min_val(a, "", 1), 1, "> min_val (str, id, depth=1)")
+
+    testing::assert_equal("zoo", arrlib::max_val(a, "", 0, 1), 1, "> max_val (str, id, from=1)")
+    testing::assert_equal("1", arrlib::min_val(a, "", 0, 1), 1, "> min_val (str, id, from=1)")
+
+    testing::assert_equal("foobar", arrlib::max_val(a, "awkpot::len"), 1, "> max_val (str, len)")
+    testing::assert_equal("z", arrlib::min_val(a, "awkpot::len"), 1, "> min_val (str, len)")
+
+    # NOTE: quick tests, really no need to tests futhermore (min|max)_idx,
+    #       since the inner mechanism is the same.
+    delete a
+    a["z"];a["foo"];a["ba"];a["xx"]["aa"];a["xx"]["bb"]
+    testing::assert_equal("z", arrlib::max_idx(a), 1, "> max_idx (str, id)")
+    testing::assert_equal("aa", arrlib::min_idx(a), 1, "> min_idx (str, id)")
+
+    testing::assert_equal("z", arrlib::max_idx(a, "", 1), 1, "> max_idx (str, id, depth=1)")
+    testing::assert_equal("ba", arrlib::min_idx(a, "", 1), 1, "> min_idx (str, id, depth=1)")
+
+    testing::assert_equal("bb", arrlib::max_idx(a, "", 0, 1), 1, "> max_idx (str, id, from=1)")
+    testing::assert_equal("aa", arrlib::min_idx(a, "", 0, 1), 1, "> min_idx (str, id, from=1)")
+
+    testing::assert_equal("foo", arrlib::max_idx(a, "awkpot::len"), 1, "> max_idx (str, len)")
+    testing::assert_equal("z", arrlib::min_idx(a, "awkpot::len"), 1, "> min_idx (str, len)")
+
+    #arrlib::_cmp_elements(a,"","","","","x")
 
     
     testing::end_test_report()
     testing::report()
 
-    if (NOHANGUP == 1) # exit after BEGIN. Use: awk -v NOHANGUP=1 -f thisfile
-	exit(0)
+    exit(0)
 }
 
 # * runs:

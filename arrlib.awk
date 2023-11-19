@@ -131,7 +131,6 @@ function _get_idxs_rec(arr, dest, depth, from,    count, idx) {
     if (depth == 0)
 	return count
     for (idx in arr) {
-	_pre = depth pre "" idx
 	if (from <= 0)
 	    dest[count++] = idx
 	if (awk::isarray(arr[idx]))
@@ -406,45 +405,96 @@ function sprintf_vals(arr, separator, depth, from,    idx, out) {
 }
 
 
-function _max_val_rec(arr, f, depth, from,    __max, __dest) {
-    # Private function to get the max value from the values of the (possibly nested)
-    # array $arr (see the doc of <max_val> for an indeep explanation).
-    # NOTE: uses recursion (get_vals).
-    get_vals(arr, __dest, depth, from)
-    for (i in __dest) {
-	__max = __dest[i]
+function _cmp_val_rec(arr, f, cmpf, depth, from,    __choosed, __cmp_val, __tmp) {
+    # Private function which applies $f to each $arr value and then compares
+    # them using the $cmpf function, returning the $arr value for which
+    # the comparison holds true.
+    # See the doc of <_cmp_elements> for more details.
+    # NOTE: $arr *must* be a flattened array.
+    for (i in arr) {
+	__choosed = arr[i]
+	__cmp_val = @f(arr[i])
 	break
     }
-    for (i in __dest) {
-	if (@f(__dest[i]) > @f(__max))
-	    __max = __dest[i]
+    for (i in arr) {
+	__tmp = @f(arr[i])
+	if (@cmpf(__tmp, __cmp_val)) {
+	    __choosed = arr[i]
+	    __cmp_val = __tmp
+	}
     }
-    return __max
+    return __choosed
 }
 
-# XXX+TODO: generalize comparisons to make max_(val|idx), min_(val|idx),
-# etc... filter function and so on. (maybe in awkpot)
-# XXX+TODO: pop/push function...
-# XXX+TODO: no _rec functions...find a way
 
-function max_val(arr, f, depth, from) {
-    # Function to get the max value from the values of the (possibly nested)
-    # array $arr, optionally from the $from level of subarrays and optionally
-    # until the $depth level of subarrays. If $from is less than 1, scans from
-    # the very level of $arr. $depth should be a positive integer,
-    # if less than 1 scans until max depth. The very level of $arr is at depth 0.
-    # $f is a function to choose the value's property on which perform the comparison,
-    # (default to the identity function) following the usual rules, see:
+function _cmp_elements(arr, f, cmpf, depth, from, what,    __dest) {
+    # Private function to get, from the values or indexes of the
+    # (possibly nested) array $arr, the value resulting from the comparison
+    # using the $cmpf function after applying to each value the $f function
+    # to choose the value property to compare on (defaults to the awkpot::id function).
+    # Btw, comparison is made following the usual rules, see:
     # https://www.gnu.org/software/gawk/manual/gawk.html#Comparison-Operators-1
-    # NOTE: uses recursion (_max_val_rec).
+    # Optionally, values/indexes are compared from the $from level of subarrays and
+    # until the $depth level of subarrays. If $from is less than 1, scans from
+    # the very level of $arr. $depth should be a positive integer, if less than 1
+    # scans until max depth. The very level of $arr is at depth 0.
+    # $whas must be "v" for value comparison or "i" for indexes comparison.
+    # NOTE: uses recursion (_cmp_val_rec).
     if (! f)
 	f = "awkpot::id"
     if (! from)
 	from = 0
     if (! depth)
 	depth = -1
-    return _max_val_rec(arr, f, depth, from)
+    if (what == "v")
+	get_vals(arr, __dest, depth, from)
+    else if (what == "i")
+	get_idxs(arr, __dest, depth, from)
+    else {
+	printf("Error: _cmp_elements: unknown 'what' arg: <%s>\n", what) > "/dev/stderr"
+	exit(1)
+    }
+    return _cmp_val_rec(__dest, f, cmpf, depth, from)
 }
+
+
+function max_val(arr, f, depth, from) {
+    # Returns the value from $arr which results greater,
+    # optionally applying the $f function to each value before comparing
+    # them (defaults to the identity function).
+    # NOTE: uses recursion (_cmp_elements).
+    return _cmp_elements(arr, f, "awkpot::gt", depth, from, "v")
+}
+
+
+function min_val(arr, f, depth, from) {
+    # Returns the value from $arr which results less,
+    # optionally applying the $f function to each value before comparing
+    # them (defaults to the identity function).
+    # NOTE: uses recursion (_cmp_elements).
+    return _cmp_elements(arr, f, "awkpot::lt", depth, from, "v")
+}
+
+
+function max_idx(arr, f, depth, from) {
+    # Returns the index from $arr which results greater,
+    # optionally applying the $f function to each index before comparing
+    # them (defaults to the identity function).
+    # NOTE: uses recursion (_cmp_elements).
+    return _cmp_elements(arr, f, "awkpot::gt", depth, from, "i")
+}
+
+function min_idx(arr, f, depth, from) {
+    # Returns the index from $arr which results less,
+    # optionally applying the $f function to each index before comparing
+    # them (defaults to the identity function).
+    # NOTE: uses recursion (_cmp_elements).
+    return _cmp_elements(arr, f, "awkpot::lt", depth, from, "i")
+}
+# XXX+TODO: generalize comparisons to make max_(val|idx), min_(val|idx),
+# etc... filter function and so on. (maybe in awkpot)
+# XXX+TODO: pop/push function...
+# XXX+TODO: no _rec functions...find a way
 
 
 function remove_empty(arr,    idx) {
@@ -462,14 +512,12 @@ function remove_empty(arr,    idx) {
 
 function remove_unassigned(arr,    idx, i, tmp) {
     # Removes unassigned and untyped values from $arr.
-    # XXX+NOTE: maybe a bug in gawk 5.3.0, some previously untyped array elements
+    # XXX+NOTE: due to a bug in gawk 5.3.0, some previously untyped array elements
     # become string when accessing them, i.e. after a printf("%s", arr[idx]) 
     # see https://lists.gnu.org/archive/html/bug-gawk/2023-11/msg00012.html
     # also see XXX+NOTE_1 in test/arrlib_test.awk
     # NOTE: uses recursion.
     for (idx in arr) {
-	#if (! awk::isarray(arr[idx]))
-	#    printf "UUUUUUUUUUUU [%s] <%s> (%s)\n", idx, arr[idx], awk::typeof(arr[idx])
 	if (awk::isarray(arr[idx]))
 	    remove_unassigned(arr[idx])
         # double check for gawk verion < 5.2
