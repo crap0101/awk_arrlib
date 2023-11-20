@@ -900,6 +900,7 @@ BEGIN {
     testing::assert_true(arrlib::pop(c), 1, "> pop() from c")
     while (arrlib::pop(c)) {}
     testing::assert_false(arrlib::pop(c), 1, "> ! pop() from [empty] c")
+    testing::assert_false(arrlib::popitem(c, "y"), 1, "> ! popitem() from [empty] c")
 	
     
 
