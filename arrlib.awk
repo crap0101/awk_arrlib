@@ -21,6 +21,74 @@ function _check_equals(a, b) {
 }
 
 
+function force_array(arr, idx) {
+    # To persuade arr[idx] to be an array.
+    # Come on boy! you can do it!
+    delete arr[idx]
+    arr[idx]["fake"] = 1
+    delete arr[idx]["fake"]
+}
+
+#XXX deep_push/deep_pop ?
+
+function push(arr, idx, val) {
+    # Push $val into $arr at index $idx.
+    # Previously existing index and value are lost.
+    if (idx in arr) {
+	if (awk::isarray(arr[idx]))
+	    delete arr[idx]
+    }
+    if (awk::isarray(val)) {
+	force_array(arr, idx)
+	copy(val, arr[idx])
+    } else {
+	arr[idx] = val
+    }
+}   
+
+
+function pop(arr, dest, todel,    idx, val) {
+    # Removes the first index/value pair from $arr,
+    # following the sorting order set by PROCINFO["sorted_in"].
+    # Fills $dest array with the index and the value using the
+    # <push> function.
+    # If $todel is true, delete $dest before adding the pair.
+    # Returns false if there are no more elements in $arr, else true.
+    if (is_empty(arr)) {
+	@dprint("pop: source array is empty")
+	return 0
+    }
+    if (todel)
+	delete dest
+    for (idx in arr) {
+	push(dest, idx, arr[idx])
+	break
+    }
+    delete arr[idx]
+    return 1
+}
+
+function popitem(arr, idx, dest, todel) {
+    # Removes $arr[$idx] and <push> it into $dest,
+    # deleting the latter if $todel is true.
+    # Returns false if there are no more elements in $arr, or
+    # if $idx is not an $arr index, else true.
+    if (is_empty(arr)) {
+	@dprint("popitem: source array is empty")
+	return 0
+    }
+    if (idx in arr) {
+	if (todel)
+	    delete dest
+	push(dest, idx, arr[idx])
+	delete arr[idx]
+	return 1
+    } else {
+	@dprint(sprintf("popitem: index <%s> not in source array", idx))
+	return 0
+    }
+}
+
 #####################
 # PRIVATE FUNCTIONS #
 #####################
@@ -304,8 +372,9 @@ function _array_copy_rec(source, dest, depth, from,    idx) {
 	if (awk::isarray(source[idx])) {
 	    # To persuade dest[idx] to be an array.
 	    # Come on boy! you can do it!
-	    dest[idx]["fake"] = 1
-	    delete dest[idx]["fake"]
+	    #dest[idx]["fake"] = 1
+	    #delete dest[idx]["fake"]
+	    force_array(dest, idx)
 	    _array_copy_rec(source[idx], dest[idx], depth-1, from-1)
 	} else {
 	    if (from <= 0) {
@@ -836,7 +905,7 @@ function uniq_idx(arr, dest) {
 
 
 BEGIN {
-    if (awk::ARRLIB_DEBUG_LEVEL) {
+    if (awk::ARRLIB_DEBUG) {
 	dprint = "awkpot::dprint_real"
 	# set dprint in awkpot functions also (defaults to dprint_fake)
 	awkpot::set_dprint(dprint)
