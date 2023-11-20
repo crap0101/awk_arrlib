@@ -847,12 +847,64 @@ BEGIN {
     testing::assert_equal("foo", arrlib::max_idx(a, "awkpot::len"), 1, "> max_idx (str, len)")
     testing::assert_equal("z", arrlib::min_idx(a, "awkpot::len"), 1, "> min_idx (str, len)")
 
-    #arrlib::_cmp_elements(a,"","","","","x")
+    cmd = sprintf("%s -i arrlib 'BEGIN { arrlib::_cmp_elements(a,\"\",\"\",\"\",\"\",\"x\") }'", ARGV[0])
+    testing::assert_false(awkpot::exec_command(cmd), 1, "> _cmp_elements: wrong 'what' arg")
 
+    # TEST force_array
+    delete a
+    a[0] = 2
+    a[2][0][1] = "foo"
+    a[2][1] = "x"
+    arrlib::force_array(a, 0)
+    testing::assert_equal(typeof(a[0]), "array", 1, "> force_array(a, 0)")
+    arrlib::force_array(a[2], 0)
+    testing::assert_equal(typeof(a[2][0]), "array", 1, "> force_array(a[2], 0)")
+    testing::assert_not_equal(a[2][0][1], "foo", 1, "> a[2][0][1] != \"foo\"")
+    testing::assert_equal(a[2][1], "x", 1, "> a[2][1] == \"x\"")
     
+    # TEST push / pop / popitem
+    delete a
+    delete b
+    delete c
+    split("1", a, ":")
+    a[0] = 2
+    a[2] = "baz"
+    b[3][41]
+    b[3][44] = "bar"
+    b[3][55][66]
+    b[4] = @/re/
+    @dprint("* a:") && arrlib::printa(a)
+    @dprint("* b:") && arrlib::printa(b)
+    @dprint("* pops from a ...")
+    while (arrlib::pop(a))
+	@dprint("* a:") && arrlib::printa(b)
+    testing::assert_true(arrlib::is_empty(a), 1, "> check is_empty(a) after popping")
+    @dprint("* push foo at index foo ...")
+    arrlib::push(a, "foo", "foo")
+    testing::assert_equal(a["foo"], "foo", 1, "> a[foo] == foo")
+    @dprint("* push bar at index foo ...")
+    arrlib::push(a, "foo", "bar")
+    testing::assert_equal(a["foo"], "bar", 1, "> a[foo] == bar")
+    @dprint("* push array b at index 2 ...")
+    arrlib::push(a, 2, b)
+    @dprint("* a:") && arrlib::printa(a)
+    testing::assert_equal(a[2][3][44], "bar", 1, "> a[2][3][44] = bar")
+    testing::assert_true(arrlib::equals(a[2], b), 1, "> check a[2] eq b")
+
+    arrlib::popitem(a, "foo", c)
+    testing::assert_equal(c["foo"], "bar", 1, "> c[foo] == bar")
+    arrlib::popitem(a[2][3], 44, c)
+    @dprint("* c:") && arrlib::printa(c)
+    testing::assert_equal(c[44], "bar", 1, "> c[41] == bar")
+    testing::assert_false(arrlib::popitem(c, "non-existent-index"), 1, "> popitem [non-existent-index]")
+    testing::assert_true(arrlib::pop(c), 1, "> pop() from c")
+    while (arrlib::pop(c)) {}
+    testing::assert_false(arrlib::pop(c), 1, "> ! pop() from [empty] c")
+	
+    
+
     testing::end_test_report()
     testing::report()
-
     exit(0)
 }
 

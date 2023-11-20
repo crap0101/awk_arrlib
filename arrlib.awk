@@ -29,65 +29,8 @@ function force_array(arr, idx) {
     delete arr[idx]["fake"]
 }
 
-#XXX deep_push/deep_pop ?
+# XXX+TODO deep_push/deep_pop ?
 
-function push(arr, idx, val) {
-    # Push $val into $arr at index $idx.
-    # Previously existing index and value are lost.
-    if (idx in arr) {
-	if (awk::isarray(arr[idx]))
-	    delete arr[idx]
-    }
-    if (awk::isarray(val)) {
-	force_array(arr, idx)
-	copy(val, arr[idx])
-    } else {
-	arr[idx] = val
-    }
-}   
-
-
-function pop(arr, dest, todel,    idx, val) {
-    # Removes the first index/value pair from $arr,
-    # following the sorting order set by PROCINFO["sorted_in"].
-    # Fills $dest array with the index and the value using the
-    # <push> function.
-    # If $todel is true, delete $dest before adding the pair.
-    # Returns false if there are no more elements in $arr, else true.
-    if (is_empty(arr)) {
-	@dprint("pop: source array is empty")
-	return 0
-    }
-    if (todel)
-	delete dest
-    for (idx in arr) {
-	push(dest, idx, arr[idx])
-	break
-    }
-    delete arr[idx]
-    return 1
-}
-
-function popitem(arr, idx, dest, todel) {
-    # Removes $arr[$idx] and <push> it into $dest,
-    # deleting the latter if $todel is true.
-    # Returns false if there are no more elements in $arr, or
-    # if $idx is not an $arr index, else true.
-    if (is_empty(arr)) {
-	@dprint("popitem: source array is empty")
-	return 0
-    }
-    if (idx in arr) {
-	if (todel)
-	    delete dest
-	push(dest, idx, arr[idx])
-	delete arr[idx]
-	return 1
-    } else {
-	@dprint(sprintf("popitem: index <%s> not in source array", idx))
-	return 0
-    }
-}
 
 #####################
 # PRIVATE FUNCTIONS #
@@ -901,6 +844,65 @@ function uniq_idx(arr, dest) {
     # as indexes with unassigned value.
     # NOTE: uses recursion (_uniq_idx).
    _uniq_idx(arr, dest)
+}
+
+
+function push(arr, idx, val) {
+    # Push $val into $arr at index $idx.
+    # Previously existing index and value are lost.
+    if (idx in arr) {
+	if (awk::isarray(arr[idx]))
+	    delete arr[idx]
+    }
+    if (awk::isarray(val)) {
+	force_array(arr, idx)
+	copy(val, arr[idx])
+    } else {
+	arr[idx] = val
+    }
+}   
+
+
+function pop(arr, dest, todel,    idx, val) {
+    # Removes the first index/value pair from $arr,
+    # following the sorting order set by PROCINFO["sorted_in"].
+    # Fills $dest array with the index and the value using the
+    # <push> function.
+    # If $todel is true, delete $dest before adding the pair.
+    # Returns false if there are no more elements in $arr, else true.
+    if (is_empty(arr)) {
+	@dprint("pop: source array is empty")
+	return 0
+    }
+    if (todel)
+	delete dest
+    for (idx in arr) {
+	push(dest, idx, arr[idx])
+	break
+    }
+    delete arr[idx]
+    return 1
+}
+
+function popitem(arr, idx, dest, todel) {
+    # Removes $arr[$idx] and <push> it into $dest,
+    # deleting the latter if $todel is true.
+    # Returns false if there are no more elements in $arr, or
+    # if $idx is not an $arr index, else true.
+    if (is_empty(arr)) {
+	@dprint("popitem: source array is empty")
+	return 0
+    }
+    if (idx in arr) {
+	if (todel)
+	    delete dest
+	push(dest, idx, arr[idx])
+	delete arr[idx]
+	return 1
+    } else {
+	@dprint(sprintf("popitem: index <%s> not in source array", idx))
+	return 0
+    }
 }
 
 
