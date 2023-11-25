@@ -674,7 +674,7 @@ function remove_empty(arr,    idx) {
 }
 
 
-function remove_unassigned(arr,    idx, i, tmp) {
+function remove_unassigned(arr,    idx, i, tmp) { #XXX+TODO
     # Removes unassigned *and* untyped values from $arr.
     # XXX+NOTE: due to a bug in gawk 5.3.0, some previously untyped array elements
     # become string when accessing them, i.e. after a printf("%s", arr[idx]) 

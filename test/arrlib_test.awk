@@ -560,10 +560,11 @@ BEGIN {
     @dprint("* ba:") && arrlib::printa(ba)
     @dprint("* bb:") && arrlib::printa(bb)
     @dprint("* bc:") && arrlib::printa(bb)
-    # XXX+NOTE_1: at this time (2023-11-18), on gawk 5.3.0 (maybe also in some version before this, down to 5.1.0)
+    # XXX+NOTE_1: at this time (2023-11-18), on gawk 5.3.0 (but also, at least, down to 5.2.2)
     # unassigned values becomes string! So, skip this test...
     # see https://lists.gnu.org/archive/html/bug-gawk/2023-11/msg00012.html
-    if (awkpot::cmp_version(awkpot::get_version(), "5.3.0", "awkpot::lt"))
+    # ...TODO: working on this to be more transparent...
+    if (awkpot::cmp_version(awkpot::get_version(), "5.2.2", "awkpot::le"))
 	testing::assert_false(arrlib::equals(bb, bc), 1, "> ! arrlib::equals(bc, bb)")
 
     @dprint("* arrlib::remove_unassigned(bc)")
@@ -571,16 +572,16 @@ BEGIN {
     testing::assert_true(arrlib::equals(bb, bc), 1, "> arrlib::equals(bc, bb)")
 
     # See above NOTE_1 ...
-    if (awkpot::cmp_version(awkpot::get_version(), "5.3.0", "awkpot::lt"))
+    if (awkpot::cmp_version(awkpot::get_version(), "5.2.2", "awkpot::le"))
 	testing::assert_equal(ba_len, arrlib::deep_length(bb), 1, "> (len) ba == (len) bb")
     @dprint(sprintf("* (length) ba: %d, bb: %d", arrlib::deep_length(ba), arrlib::deep_length(bb)))
     # See above NOTE_1 ...
-    if (awkpot::cmp_version(awkpot::get_version(), "5.3.0", "awkpot::lt"))
+    if (awkpot::cmp_version(awkpot::get_version(), "5.2.2", "awkpot::le"))
 	testing::assert_equal(arrlib::sprintfa(bb), arrlib::sprintfa(ba), 1, "> (sprintf) bb == ba")
     awkpot::set_sort_order(_prev_order)
 
     # See above NOTE_1 ...
-    if (awkpot::cmp_version(awkpot::get_version(), "5.3.0", "awkpot::lt")) {
+    if (awkpot::cmp_version(awkpot::get_version(), "5.2.2", "awkpot::le")) {
 	testing::assert_false(("eggs" in bb), 1, "> ! (\"eggs\" in bb)")
 	testing::assert_true(arrlib::equals(ba, bb), 1, "> arrlib::equals(ba, bb)")
     }
@@ -732,7 +733,8 @@ BEGIN {
     testing::assert_equal(arrlib::array_length(dest_v), 1, 1, "> uniq dest_v length")
     for (i in dest_v) {
 	t = awk::typeof(dest_v[i])
-	if (awkpot::cmp_version(awkpot::get_version(), "5.3.0", "awkpot::lt"))
+	# see NOTE_1
+	if (awkpot::cmp_version(awkpot::get_version(), "5.2.2", "awkpot::le"))
 	    testing::assert_equal(t, "unassigned", 1, "> uniq dest_v type")
 	else
 	    testing::assert_equal(t, "untyped", 1, "> uniq dest_v type")
@@ -741,7 +743,8 @@ BEGIN {
     arrlib::uniq(dest_i, dest_v)
     testing::assert_equal(arrlib::array_length(dest_v), 1, 1, "> uniq dest_v length (2)")
     for (i in dest_v)
-	if (awkpot::cmp_version(awkpot::get_version(), "5.3.0", "awkpot::lt"))
+	# see NOTE_1
+	if (awkpot::cmp_version(awkpot::get_version(), "5.2.2", "awkpot::le"))
 	    testing::assert_equal(typeof(dest_v[i]), "unassigned", 1, "> uniq dest_v type (2)")
 	else
 	    testing::assert_equal(typeof(dest_v[i]), "untyped", 1, "> uniq dest_v type (2)")
@@ -768,7 +771,8 @@ BEGIN {
     arrlib::uniq(dest, dest_v)
     testing::assert_equal(arrlib::array_length(dest_v), 1, 1, "> uniq dest_v length (3)")
     for (i in dest_v)
-	if (awkpot::cmp_version(awkpot::get_version(), "5.3.0", "awkpot::lt"))
+	# see NOTE_1
+	if (awkpot::cmp_version(awkpot::get_version(), "5.2.2", "awkpot::le"))
 	    testing::assert_equal(typeof(dest_v[i]), "unassigned", 1, "> uniq dest_v type (3)")
 	else
 	    testing::assert_equal(typeof(dest_v[i]), "untyped", 1, "> uniq dest_v type (3)")
@@ -776,7 +780,8 @@ BEGIN {
     arrlib::uniq(dest_i, dest_v)
     testing::assert_equal(arrlib::array_length(dest_v), 1, 1, "> uniq dest_v length (4)")
     for (i in dest_v)
-	if (awkpot::cmp_version(awkpot::get_version(), "5.3.0", "awkpot::lt"))
+	# see NOTE_1
+	if (awkpot::cmp_version(awkpot::get_version(), "5.2.2", "awkpot::le"))
 	    testing::assert_equal(typeof(dest_v[i]), "unassigned", 1, "> uniq dest_v type (4)")
 	else
 	    testing::assert_equal(typeof(dest_v[i]), "untyped", 1, "> uniq dest_v type (4)")
