@@ -734,7 +734,7 @@ BEGIN {
     for (i in dest_v) {
 	t = awk::typeof(dest_v[i])
 	# see NOTE_1
-	if (awkpot::cmp_version(awkpot::get_version(), "5.2.2", "awkpot::le"))
+	if (awkpot::cmp_version(awkpot::get_version(), "5.2.2", "awkpot::lt"))
 	    testing::assert_equal(t, "unassigned", 1, "> uniq dest_v type")
 	else
 	    testing::assert_equal(t, "untyped", 1, "> uniq dest_v type")
@@ -744,7 +744,7 @@ BEGIN {
     testing::assert_equal(arrlib::array_length(dest_v), 1, 1, "> uniq dest_v length (2)")
     for (i in dest_v)
 	# see NOTE_1
-	if (awkpot::cmp_version(awkpot::get_version(), "5.2.2", "awkpot::le"))
+	if (awkpot::cmp_version(awkpot::get_version(), "5.2.2", "awkpot::lt"))
 	    testing::assert_equal(typeof(dest_v[i]), "unassigned", 1, "> uniq dest_v type (2)")
 	else
 	    testing::assert_equal(typeof(dest_v[i]), "untyped", 1, "> uniq dest_v type (2)")
@@ -772,7 +772,7 @@ BEGIN {
     testing::assert_equal(arrlib::array_length(dest_v), 1, 1, "> uniq dest_v length (3)")
     for (i in dest_v)
 	# see NOTE_1
-	if (awkpot::cmp_version(awkpot::get_version(), "5.2.2", "awkpot::le"))
+	if (awkpot::cmp_version(awkpot::get_version(), "5.2.2", "awkpot::lt"))
 	    testing::assert_equal(typeof(dest_v[i]), "unassigned", 1, "> uniq dest_v type (3)")
 	else
 	    testing::assert_equal(typeof(dest_v[i]), "untyped", 1, "> uniq dest_v type (3)")
@@ -781,7 +781,7 @@ BEGIN {
     testing::assert_equal(arrlib::array_length(dest_v), 1, 1, "> uniq dest_v length (4)")
     for (i in dest_v)
 	# see NOTE_1
-	if (awkpot::cmp_version(awkpot::get_version(), "5.2.2", "awkpot::le"))
+	if (awkpot::cmp_version(awkpot::get_version(), "5.2.2", "awkpot::lt"))
 	    testing::assert_equal(typeof(dest_v[i]), "unassigned", 1, "> uniq dest_v type (4)")
 	else
 	    testing::assert_equal(typeof(dest_v[i]), "untyped", 1, "> uniq dest_v type (4)")
