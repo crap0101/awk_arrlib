@@ -7,7 +7,7 @@
 
 @namespace "arrlib"
 
-# XXX+TODO: pop/push function...???
+# XXX+TODO deep_push/deep_pop ?
 # XXX+TODO: no _rec functions...find a way
 
 #####################
@@ -21,6 +21,12 @@ function _check_equals(a, b) {
 }
 
 
+function check_untyped_unassigned(x) {
+    # Returns true if $x is either unassigned or untyped, false otherwise.
+    return (awk::typeof(x) == "unassigned" || awk::typeof(x) == "untyped")
+}
+
+
 function force_array(arr, idx) {
     # To persuade arr[idx] to be an array.
     # Come on boy! you can do it!
@@ -29,7 +35,42 @@ function force_array(arr, idx) {
     delete arr[idx]["fake"]
 }
 
-# XXX+TODO deep_push/deep_pop ?
+
+function remove_empty(arr,    idx) {
+    # Removes from $arr possibly created
+    # empty arrays during copying or slicing.
+    # NOTE: uses recursion.
+    for (idx in arr)
+	if (awk::isarray(arr[idx]))
+	    if (is_empty(arr[idx]))
+		delete arr[idx]
+	    else
+		remove_empty(arr[idx])
+}
+
+
+function remove_unassigned_untyped(arr,    idx, i, tmp) {
+    # Removes unassigned *and* untyped values from $arr.
+    # NOTE: uses recursion.
+    # COMPATIBILY_NOTE: due to a change in beaviour from (at least) gawk 5.2.2,
+    # some previously untyped array elements
+    # become string when accessing them, i.e. after a printf("%s", arr[idx]) 
+    # see https://lists.gnu.org/archive/html/bug-gawk/2023-11/msg00012.html
+    # also see NOTE_1 in test/arrlib_test.awk
+    for (idx in arr) {
+	if (awk::isarray(arr[idx]))
+	    remove_unassigned_untyped(arr[idx])
+        # double check for gawk verion < 5.2
+	else if (check_untyped_unassigned(arr[idx]))
+	    delete arr[idx]
+    }
+    # remove possibly empty arrays after removal of unassigned values
+    for (idx in arr) {
+	if (awk::isarray(arr[idx]))
+	    if (is_empty(arr[idx]))
+		delete arr[idx]
+    }
+}
 
 
 #####################
@@ -51,9 +92,12 @@ function _arr_print_rec(arr, outfile, depth, from,    fmt, _fmt, i) {
             _arr_print_rec(arr[i], outfile, depth-1, from-1, _fmt)
         }
         else {
-	    if (from <= 0)
-		printf("arr%s[%s] = %s\n", fmt, i, arr[i]) >> outfile
-		#printf("arr%s[%s] = %s (%s)\n", fmt, i, arr[i], awk::typeof(arr[i])) >> outfile
+	    if (from <= 0) {
+		if (check_untyped_unassigned(arr[i]))
+		    printf("arr%s[%s] = %s\n", fmt, i, "") >> outfile
+		else
+		    printf("arr%s[%s] = %s\n", fmt, i, arr[i]) >> outfile
+	    }
 	}
     }
 }
@@ -75,8 +119,12 @@ function _arr_sprintf_rec(arr, depth, from,    fmt, _fmt, i, out) {
             out = out _arr_sprintf_rec(arr[i], depth-1, from-1, _fmt)
         }
         else {
-	    if (from <= 0)
-		out = out sprintf("arr%s[%s] = %s\n", fmt, i, arr[i])
+	    if (from <= 0) {
+		if (check_untyped_unassigned(arr[i]))
+		    out = out sprintf("arr%s[%s] = %s\n", fmt, i, "")
+		else
+		    out = out sprintf("arr%s[%s] = %s\n", fmt, i, arr[i])
+	    }
 	}
     }
     return out
@@ -154,7 +202,7 @@ function _sprintf_idxs_rec(arr, separator, depth, from,    idx, out, s, empty_va
 }
 
 
-function _print_vals_rec(arr, outfile, depth, from,    i, idx) {
+function _print_vals_rec(arr, outfile, depth, from,    idx) {
     # Private function to print the values of the (possibly nested) array $arr,
     # from the $from level until the $depth level of subarrays.
     # The very level of $arr is at depth 0.
@@ -166,8 +214,12 @@ function _print_vals_rec(arr, outfile, depth, from,    i, idx) {
 	if (awk::isarray(arr[idx]))
 	    _print_vals_rec(arr[idx], outfile, depth-1, from-1)
 	else
-	    if (from <= 0)
-		print arr[idx] >> outfile
+	    if (from <= 0) {
+		if (check_untyped_unassigned(arr[idx]))
+		    printf("%s\n", "") >> outfile
+		else
+		    printf("%s\n", arr[idx]) >> outfile
+	    }
 }
 
 
@@ -313,10 +365,6 @@ function _array_copy_rec(source, dest, depth, from,    idx) {
     }
     for (idx in source) {
 	if (awk::isarray(source[idx])) {
-	    # To persuade dest[idx] to be an array.
-	    # Come on boy! you can do it!
-	    #dest[idx]["fake"] = 1
-	    #delete dest[idx]["fake"]
 	    force_array(dest, idx)
 	    _array_copy_rec(source[idx], dest[idx], depth-1, from-1)
 	} else {
@@ -326,6 +374,7 @@ function _array_copy_rec(source, dest, depth, from,    idx) {
 	}
     }
     # to remove possibly created empty arrays ($depth reached)
+    #XXX+TODO: investigate this... seems a problem with arrayfuncs
     remove_empty(dest)
 }
 
@@ -395,29 +444,44 @@ function _equals_rec(arr1, arr2, level,    i) {
     # NOTE: uses recursion.
     if (level == 0)
 	return 1
-    if (array_length(arr1) != array_length(arr2))
+    if (array_length(arr1) != array_length(arr2)) {
+	@dprint(sprintf("* _equals_rec: unequal length: %d != %d",
+			array_length(arr1), array_length(arr2)))
 	return 0
+    }
     # boilerplate code to avoid creating fake values:
     for (i in arr1)
-    	if (! (i in arr2))
+    	if (! (i in arr2)) {
+	    @dprint(sprintf("* _equals_rec: index <%s> in arr1 not in arr2", i))
      	    return 0
+	}
     for (i in arr2)
-     	if (! (i in arr1))
-     	    return 0
+     	if (! (i in arr1)) {
+	    @dprint(sprintf("* _equals_rec: index <%s> in arr2 not in arr1", i))
+	    return 0
+	}
     # ...end of boilerplate code (for now ^L^)
     for (i in arr1) {
 	if (awk::isarray(arr1[i])) {
-	    if (! awk::isarray(arr2[i]))
+	    if (! awk::isarray(arr2[i])) {
+		@dprint(sprintf("* _equals_rec: arr2[%s] not an array", i))
 		return 0
+	    }
 	    else
 		if (! _equals_rec(arr1[i], arr2[i], level - 1))
 		    return 0
 	} else {
-	    if (awk::isarray(arr2[i]))
+	    if (awk::isarray(arr2[i])) {
+		@dprint(sprintf("* _equals_rec: arr2[%s] is an array", i))
 		return 0
+	    }
 	    else
-		if (! @check_equals(arr1[i], arr2[i]))
+		if (! @check_equals(arr1[i], arr2[i])) {
+		    @dprint(sprintf("arr1[i] <%s> (%s) != arr2[i] <%s> (%s)",
+				    arr1[i], awk::typeof(arr1[i]),
+				    arr2[i], awk::typeof(arr2[i])))
 		    return 0
+		}
 	}
     }
     return 1
@@ -658,42 +722,6 @@ function min_idx(arr, f, depth, from) {
     # them (defaults to the identity function).
     # NOTE: uses recursion (_cmp_elements).
     return _cmp_elements(arr, f, "awkpot::lt", depth, from, "i")
-}
-
-
-function remove_empty(arr,    idx) {
-    # Removes from $arr possibly created
-    # empty arrays during copying or slicing.
-    # NOTE: uses recursion.
-    for (idx in arr)
-	if (awk::isarray(arr[idx]))
-	    if (is_empty(arr[idx]))
-		delete arr[idx]
-	    else
-		remove_empty(arr[idx])
-}
-
-
-function remove_unassigned(arr,    idx, i, tmp) { #XXX+TODO
-    # Removes unassigned *and* untyped values from $arr.
-    # XXX+NOTE: due to a bug in gawk 5.3.0, some previously untyped array elements
-    # become string when accessing them, i.e. after a printf("%s", arr[idx]) 
-    # see https://lists.gnu.org/archive/html/bug-gawk/2023-11/msg00012.html
-    # also see XXX+NOTE_1 in test/arrlib_test.awk
-    # NOTE: uses recursion.
-    for (idx in arr) {
-	if (awk::isarray(arr[idx]))
-	    remove_unassigned(arr[idx])
-        # double check for gawk verion < 5.2
-	else if (awk::typeof(arr[idx]) == "unassigned" || awk::typeof(arr[idx]) == "untyped")
-	    delete arr[idx]	
-    }
-    # remove possibly empty arrays after removal of unassigned values
-    for (idx in arr) {
-	if (awk::isarray(arr[idx]))
-	    if (is_empty(arr[idx]))
-		delete arr[idx]
-    }
 }
 
 

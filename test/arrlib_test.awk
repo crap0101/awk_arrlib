@@ -80,17 +80,42 @@ BEGIN {
     bg["D"]["E"]["F"][1] = "DEF_1"
 
     testing::start_test_report()
-	
+
+    # TEST check_untyped_unassigned
+    delete bf
+    split("1", bf, ":")
+    bf[0] = -1
+    bf[2] = "foo" 
+    bf[3] = ""
+    bf[4] = @/re/ 
+    bf[5] = 11.2
+    bf[6][7]
+    bf[7] = 2e9
+    for (i in bf) 
+	testing::assert_false(arrlib::check_untyped_unassigned(bf[i]),
+			      1, sprintf("> ! check_untyped_unassigned bf[%s]", i))
+    bf[8]
+    testing::assert_true(arrlib::check_untyped_unassigned(bf[8]),
+			  1, "> check_untyped_unassigned bf[8]")
+    testing::assert_true(arrlib::check_untyped_unassigned(unassigned_or_untyped_scalar),
+			  1, "> check_untyped_unassigned unassigned_or_untyped_scalar")
+    testing::assert_true(arrlib::check_untyped_unassigned(also_and_array_one[8]),
+			  1, "> check_untyped_unassigned also_and_array_one[8]")
+
+    delete bf
+    
     # TEST arrlib::copy && sorting order
     @dprint("* array_copy(arr, b)")
     arrlib::copy(arr, b)
+    testing::assert_true(arrlib::equals(arr, b), 1, "> arrlib::equals(arr, b)")
     @dprint("* arr:") && arrlib::printa(arr)
     @dprint("* b:") && arrlib::printa(b)
-    testing::assert_true(arrlib::equals(arr, b), 1, "> arrlib::equals(arr, b)")
+    testing::assert_true(arrlib::equals(arr, b), 1, "> arrlib::equals(arr, b) (2)")
     @dprint("* arrlib::copy(b, x)")
     arrlib::copy(b, x)
-    @dprint("* x:") && arrlib::printa(x)
     testing::assert_true(arrlib::equals(x, b), 1, "> arrlib::equals(x, b)")
+    @dprint("* x:") && arrlib::printa(x)
+    testing::assert_true(arrlib::equals(x, b), 1, "> arrlib::equals(x, b) (2)")
     @dprint("* _prev_order = awkpot::set_sort_order(\"@ind_num_desc\")")
     _prev_order = awkpot::set_sort_order("@ind_num_desc")
     @dprint("* printa(b)") && arrlib::printa(b)
@@ -102,6 +127,17 @@ BEGIN {
     testing::assert_true(arrlib::equals(b1, b), 1, "> arrlib::equals(b1, b)")
     @dprint("* b1:") && arrlib::printa(b1)
     @dprint(sprintf("* b1 (sprintfa): <%s>", arrlib::sprintfa(b1)))
+
+    delete b1
+    @dprint("* copy(bg, b1)")
+    arrlib::copy(bg, b1)
+    printf("LEN: %d %d\n", arrlib::array_length(bg), arrlib::array_length(b1))
+    testing::assert_true(arrlib::equals(bg, b1, 0, 0), 0, "> arrlib::equals(bg, b1, 0, 1) (typecheck)")
+    @dprint("* bg:") && arrlib::printa(bg)
+    @dprint("* b1:") && arrlib::printa(b1)
+    testing::assert_true(arrlib::equals(bg, b1, 0, 1), 1, "> arrlib::equals(bg, b1, 0, 1) (typecheck) (2)")
+    @dprint("* b1:") && arrlib::printa(b1)
+    testing::assert_true(arrlib::equals(bg, b1, 0, 1), 1, "> arrlib::equals(bg, b1, 0, 1) (typecheck) (3)")
 
     @dprint("* array_copy(bg, c, 3, 1)")
     arrlib::copy(bg, c, 3, 1)
@@ -238,13 +274,16 @@ BEGIN {
     _t3 = sys::mktemp("/tmp")
     arrlib::print_vals(ba, _t3, 2)
     awkpot::read_file_arr(_t3, ba_read)
+    @dprint("* ba:") && arrlib::printa(ba)
     @dprint("* ba_read:") && arrlib::printa(ba_read)
+
     asort(ba_read)
     ba_str = arrlib::sprintf_vals(ba_read, ":")
     arrlib::copy(ba, ba_pcopy, 2)
+    @dprint("* ba:") && arrlib::printa(ba)
     @dprint("* ba_pcopy:") && arrlib::printa(ba_pcopy)
     sys::rm(_t3)
-    
+ 
     #arrlib::printa
     array::deep_flat(ba_pcopy, ba_flat)
     @dprint("* ba_flat:") && arrlib::printa(ba_flat)
@@ -554,7 +593,7 @@ BEGIN {
     @dprint(sprintf("* (length) ba: %d, bb: %d", arrlib::deep_length(ba), arrlib::deep_length(bb)))
 
     @dprint("* remove unassigned elements from bb")
-    arrlib::remove_unassigned(bb) # now fake arrays are removed, unassigned elements too
+    arrlib::remove_unassigned_untyped(bb) # now fake arrays are removed, unassigned elements too
 
     _prev_order = awkpot::set_sort_order("@ind_num_desc")
     @dprint("* ba:") && arrlib::printa(ba)
@@ -567,8 +606,8 @@ BEGIN {
     if (awkpot::cmp_version(awkpot::get_version(), "5.2.2", "awkpot::le"))
 	testing::assert_false(arrlib::equals(bb, bc), 1, "> ! arrlib::equals(bc, bb)")
 
-    @dprint("* arrlib::remove_unassigned(bc)")
-    arrlib::remove_unassigned(bc) # remove fakes from bc too
+    @dprint("* arrlib::remove_unassigned_untyped(bc)")
+    arrlib::remove_unassigned_untyped(bc) # remove fakes from bc too
     testing::assert_true(arrlib::equals(bb, bc), 1, "> arrlib::equals(bc, bb)")
 
     # See above NOTE_1 ...
