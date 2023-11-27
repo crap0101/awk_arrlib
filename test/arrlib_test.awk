@@ -144,8 +144,10 @@ BEGIN {
     bgstr = arrlib::sprintfa(bg, 3, 1)
     @dprint(sprintf("* sprintfa(bg, 3, 1): <%s>", bgstr))
     cs = arrlib::sprintfa(c)
+    print "cs",cs
+    print "bgstr",bgstr
     testing::assert_equal(cs, bgstr, 1, "> cs == bgstr")
-
+    #exit(99)
     arrlib::copy(bg, d, 1)
     bgstr1 = arrlib::sprintfa(bg, 1)
     ds = arrlib::sprintfa(d)
@@ -551,6 +553,7 @@ BEGIN {
     delete b
     
     # TEST test remove_empty && # TEST arrlib::copy with unassigned values
+
     arrlib::copy(ba, bb)
     testing::assert_true(arrlib::equals(ba, bb), 1, "> arrlib::equals(ba, bb)")
     @dprint("* ba:") && arrlib::printa(ba)
@@ -561,8 +564,8 @@ BEGIN {
     bb["eggs"][1]
     bb["eggs"][2][1][2]
     bb["eggs"][2][1][2]
+    bb[18][19][20] # for testing remove_empty()
     @dprint("bb:") && arrlib::printa(bb)
-
     ba_len = arrlib::deep_length(ba)
     bb_len = arrlib::deep_length(bb)
     testing::assert_not_equal(ba_len, bb_len, 1, "> (len) ba != (len) bb)")
@@ -583,47 +586,45 @@ BEGIN {
 
     #print "* bc:";arrlib::printa(bc)
     testing::assert_true(arrlib::equals(bb, bc), 1, "> arrlib::equals(bb, bc)")
+    delete bb[18][19] # for testing remove_empty()
 
     @dprint("* remove_empty(bb)")
-    arrlib::remove_empty(bb) # fake arrays not empty, so not removed
+    arrlib::remove_empty(bb) # others fake arrays (but not bb[18][19][20]) not empty, so not removed
     @dprint("* bb:") && arrlib::printa(bb)
-    testing::assert_true(arrlib::equals(bb, bc), 1, "> arrlib::equals(bb, bc)")
+    testing::assert_false(arrlib::equals(bb, bc), 1, "> arrlib::equals(bb, bc)")
     testing::assert_false(arrlib::equals(ba, bb), 1, "> ! arrlib::equals(ba, bb)")
     testing::assert_not_equal(ba_len, arrlib::deep_length(bb), 1, "> (len) ba != (len) bb)")
     @dprint(sprintf("* (length) ba: %d, bb: %d", arrlib::deep_length(ba), arrlib::deep_length(bb)))
 
     @dprint("* remove unassigned elements from bb")
-    arrlib::remove_unassigned_untyped(bb) # now fake arrays are removed, unassigned elements too
+    arrlib::remove_unassigned_untyped(bb) # now unassigned/untyped elements are removed
 
     _prev_order = awkpot::set_sort_order("@ind_num_desc")
     @dprint("* ba:") && arrlib::printa(ba)
     @dprint("* bb:") && arrlib::printa(bb)
     @dprint("* bc:") && arrlib::printa(bb)
-    # XXX+NOTE_1: at this time (2023-11-18), on gawk 5.3.0 (but also, at least, down to 5.2.2)
-    # unassigned values becomes string! So, skip this test...
+    # NOTE_1: at this time (2023-11-18), on gawk 5.3.0 (but also, at least, down to 5.2.2)
+    # unassigned values becomes string...
     # see https://lists.gnu.org/archive/html/bug-gawk/2023-11/msg00012.html
-    # ...TODO: working on this to be more transparent...
-    if (awkpot::cmp_version(awkpot::get_version(), "5.2.2", "awkpot::le"))
-	testing::assert_false(arrlib::equals(bb, bc), 1, "> ! arrlib::equals(bc, bb)")
+    # UPDATE: since this is a normal behaviour, arrlib has been updated to not mess up
+    # with original values (I hope), so these test should be now consistent across many
+    # gawk versions (at least from 5.1.0 fo 5.3.0).
+    testing::assert_false(arrlib::equals(bb, bc), 1, "> ! arrlib::equals(bc, bb)")
 
     @dprint("* arrlib::remove_unassigned_untyped(bc)")
-    arrlib::remove_unassigned_untyped(bc) # remove fakes from bc too
+    arrlib::remove_unassigned_untyped(bc) # remove unassigned/untyped from bc too
     testing::assert_true(arrlib::equals(bb, bc), 1, "> arrlib::equals(bc, bb)")
 
     # See above NOTE_1 ...
-    if (awkpot::cmp_version(awkpot::get_version(), "5.2.2", "awkpot::le"))
-	testing::assert_equal(ba_len, arrlib::deep_length(bb), 1, "> (len) ba == (len) bb")
+    testing::assert_equal(ba_len, arrlib::deep_length(bb), 1, "> (len) ba == (len) bb")
     @dprint(sprintf("* (length) ba: %d, bb: %d", arrlib::deep_length(ba), arrlib::deep_length(bb)))
     # See above NOTE_1 ...
-    if (awkpot::cmp_version(awkpot::get_version(), "5.2.2", "awkpot::le"))
-	testing::assert_equal(arrlib::sprintfa(bb), arrlib::sprintfa(ba), 1, "> (sprintf) bb == ba")
+    testing::assert_equal(arrlib::sprintfa(bb), arrlib::sprintfa(ba), 1, "> (sprintf) bb == ba")
     awkpot::set_sort_order(_prev_order)
 
     # See above NOTE_1 ...
-    if (awkpot::cmp_version(awkpot::get_version(), "5.2.2", "awkpot::le")) {
-	testing::assert_false(("eggs" in bb), 1, "> ! (\"eggs\" in bb)")
-	testing::assert_true(arrlib::equals(ba, bb), 1, "> arrlib::equals(ba, bb)")
-    }
+    testing::assert_false(("eggs" in bb), 1, "> ! (\"eggs\" in bb)")
+    testing::assert_true(arrlib::equals(ba, bb), 1, "> arrlib::equals(ba, bb)")
 
     delete bd
     @dprint("* arrlib::copy(bb, bd)")
@@ -771,23 +772,18 @@ BEGIN {
     arrlib::uniq(dest, dest_v)
     testing::assert_equal(arrlib::array_length(dest_v), 1, 1, "> uniq dest_v length")
     for (i in dest_v) {
-	t = awk::typeof(dest_v[i])
 	# see NOTE_1
-	if (awkpot::cmp_version(awkpot::get_version(), "5.2.2", "awkpot::lt"))
-	    testing::assert_equal(t, "unassigned", 1, "> uniq dest_v type")
-	else
-	    testing::assert_equal(t, "untyped", 1, "> uniq dest_v type")
+	t = awk::typeof(dest_v[i])
+	testing::assert_true(t == "unassigned" || t == "untyped", 1, "> uniq dest_v type")
     }
     delete dest_v
     arrlib::uniq(dest_i, dest_v)
     testing::assert_equal(arrlib::array_length(dest_v), 1, 1, "> uniq dest_v length (2)")
-    for (i in dest_v)
+    for (i in dest_v) {
 	# see NOTE_1
-	if (awkpot::cmp_version(awkpot::get_version(), "5.2.2", "awkpot::lt"))
-	    testing::assert_equal(typeof(dest_v[i]), "unassigned", 1, "> uniq dest_v type (2)")
-	else
-	    testing::assert_equal(typeof(dest_v[i]), "untyped", 1, "> uniq dest_v type (2)")
-
+	t = typeof(dest_v[i])
+	testing::assert_true(t == "unassigned" || t == "untyped", 1, "> uniq dest_v type (2)")
+    }
 
     delete __arr
     delete dest
@@ -809,21 +805,19 @@ BEGIN {
     # check all values are unassigned:
     arrlib::uniq(dest, dest_v)
     testing::assert_equal(arrlib::array_length(dest_v), 1, 1, "> uniq dest_v length (3)")
-    for (i in dest_v)
+    for (i in dest_v) {
 	# see NOTE_1
-	if (awkpot::cmp_version(awkpot::get_version(), "5.2.2", "awkpot::lt"))
-	    testing::assert_equal(typeof(dest_v[i]), "unassigned", 1, "> uniq dest_v type (3)")
-	else
-	    testing::assert_equal(typeof(dest_v[i]), "untyped", 1, "> uniq dest_v type (3)")
+	t = typeof(dest_v[i])
+	testing::assert_true(t == "unassigned" || t == "untyped", 1, "> uniq dest_v type (3)")
+    }
     delete dest_v
     arrlib::uniq(dest_i, dest_v)
     testing::assert_equal(arrlib::array_length(dest_v), 1, 1, "> uniq dest_v length (4)")
-    for (i in dest_v)
+    for (i in dest_v) {
 	# see NOTE_1
-	if (awkpot::cmp_version(awkpot::get_version(), "5.2.2", "awkpot::lt"))
-	    testing::assert_equal(typeof(dest_v[i]), "unassigned", 1, "> uniq dest_v type (4)")
-	else
-	    testing::assert_equal(typeof(dest_v[i]), "untyped", 1, "> uniq dest_v type (4)")
+	t = typeof(dest_v[i])
+	testing::assert_true(t == "unassigned" || t == "untyped", 1, "> uniq dest_v type (4)")
+    }
     awkpot::set_sort_order(_prev_order)
 
     # TEST max_val / min_val / max_idx / min_idx

@@ -42,8 +42,10 @@ function remove_empty(arr,    idx) {
     # NOTE: uses recursion.
     for (idx in arr)
 	if (awk::isarray(arr[idx]))
-	    if (is_empty(arr[idx]))
+	    if (is_empty(arr[idx])) {
+		@dprint(sprintf("* remove_empty: found empty array at index <%s>", idx))
 		delete arr[idx]
+	    }
 	    else
 		remove_empty(arr[idx])
 }
@@ -353,6 +355,32 @@ function _cmp_elements(arr, f, cmpf, depth, from, what,    __dest) {
     return _cmp_val_rec(__dest, f, cmpf, depth, from)
 }
 
+function xxxx_array_copy_rec(source, dest, depth, from,    idx) { #XXX+TODO, no rec, pop()
+    # Private function to make a copy of the
+    # (possibly nested) $source array in the $dest array
+    # from the $from level until the  $depth level of subarrays.
+    # The very level of $arr is at depth 0.
+    # NOTE: uses recursion.
+    if (depth == 0) {
+	return 0
+    }
+    for (idx in source) {
+	if (from <= 0) {
+	    if (awk::isarray(source[idx])) {
+		force_array(dest, idx)
+		_array_copy_rec(source[idx], dest[idx], depth-1, from-1)
+	    } else
+		dest[idx] = source[idx]
+	}
+    }
+    print "=============="
+    printa(dest)
+    print "=============="
+    #remove_empty(dest)
+    return 1
+    # to remove possibly created empty arrays
+    #remove_empty(dest)
+}
 
 function _array_copy_rec(source, dest, depth, from,    idx) {
     # Private function to make a copy of the
@@ -360,9 +388,8 @@ function _array_copy_rec(source, dest, depth, from,    idx) {
     # from the $from level until the  $depth level of subarrays.
     # The very level of $arr is at depth 0.
     # NOTE: uses recursion.
-    if (depth == 0) {
+    if (depth == 0)
 	return
-    }
     for (idx in source) {
 	if (awk::isarray(source[idx])) {
 	    force_array(dest, idx)
@@ -373,9 +400,11 @@ function _array_copy_rec(source, dest, depth, from,    idx) {
 	    }
 	}
     }
-    # to remove possibly created empty arrays ($depth reached)
-    #XXX+TODO: investigate this... seems a problem with arrayfuncs
+    # NOTE: Makes a call to remove_empty() to remove possibly created
+    # empty arrays during the copy/slicing, due to the recursion
+    # "backwards" subarray population.
     remove_empty(dest)
+
 }
 
 
