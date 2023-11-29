@@ -23,7 +23,7 @@ function _check_equals(a, b) {
 
 function check_untyped_unassigned(x) {
     # Returns true if $x is either unassigned or untyped, false otherwise.
-    return (awk::typeof(x) == "unassigned" || awk::typeof(x) == "untyped")
+    return ((awk::typeof(x) == "unassigned") || (awk::typeof(x) == "untyped"))
 }
 
 
@@ -403,6 +403,7 @@ function _array_copy_rec(source, dest, depth, from,    idx) {
     # NOTE: Makes a call to remove_empty() to remove possibly created
     # empty arrays during the copy/slicing (i.e. deleted arrays),
     # due to the recursion "backwards" subarray population.
+    # UPDATE: optionally, not really needed... leave it like this
     #remove_empty(dest)
 }
 

@@ -532,7 +532,16 @@ BEGIN {
     delete arr2["foo"]
     arr2["foo"] = 1
     testing::assert_true(arrlib::equals(arr1,arr2), 1, "> equals(arr1, arr2)")
-    delete arr1;delete arr2
+
+    #XXX fatal: testing::assert_false(arrlib::equals(arr1,1), 1, "> ! equals(arr1, arr2) [arr2 deleted too]")
+    #XXX fatal: testing::assert_false(arrlib::equals(1, arr1), 1, "> ! equals(arr1, arr2) [arr2 deleted too]")
+    # then check arr1 not messed up
+    #testing::assert_true(arrlib::equals(arr1,arr2), 1, "> equals(arr1, arr2)")
+    #XXX fatal: testing::assert_false(arrlib::equals(1,1), 1, "> ! equals(arr1, arr2) [arr2 deleted too]")
+
+    delete arr1
+    testing::assert_false(arrlib::equals(arr1,arr2), 1, "> ! equals(arr1, arr2) [arr1 deleted]")
+    delete arr2
 
     # TEST empty
     testing::assert_false(arrlib::is_empty(b), 1, "> ! arrlib::is_empty(b)")
