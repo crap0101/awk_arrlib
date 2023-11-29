@@ -355,12 +355,12 @@ function _cmp_elements(arr, f, cmpf, depth, from, what,    __dest) {
     return _cmp_val_rec(__dest, f, cmpf, depth, from)
 }
 
-function xxxx_array_copy_rec(source, dest, depth, from,    idx) { #XXX+TODO, no rec, pop()
+function _array_copy_no_rec(source, dest, depth, from,    idx) { #XXX+TODO, no rec, pop()
     # Private function to make a copy of the
     # (possibly nested) $source array in the $dest array
     # from the $from level until the  $depth level of subarrays.
     # The very level of $arr is at depth 0.
-    # NOTE: uses recursion.
+
     if (depth == 0) {
 	return 0
     }
@@ -401,10 +401,9 @@ function _array_copy_rec(source, dest, depth, from,    idx) {
 	}
     }
     # NOTE: Makes a call to remove_empty() to remove possibly created
-    # empty arrays during the copy/slicing, due to the recursion
-    # "backwards" subarray population.
-    remove_empty(dest)
-
+    # empty arrays during the copy/slicing (i.e. deleted arrays),
+    # due to the recursion "backwards" subarray population.
+    #remove_empty(dest)
 }
 
 
