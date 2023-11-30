@@ -105,6 +105,30 @@ BEGIN {
     delete bf
     
     # TEST arrlib::copy && sorting order
+    y[1][2] = "foo"
+    y[11][2][3] = 3
+    y[11][2][3]
+    y[2][22] = "x"
+    y[2][222] = 2
+
+    yy[1][2] = "foo"
+    yy[11][2][3] = 3
+    yy[11][2][3]
+    yy[2][22] = "x"
+    yy[2][222] = 2
+    @dprint("* array_copy(y, yyy)")
+    arrlib::copy(y, yyy)
+    testing::assert_true(arrlib::equals(yyy, yy), 1, "> arrlib::equals(yyy, yy) [deep]")
+    delete y
+    delete yy
+    delete yyy
+    y[0]=2;y[1]=9;y[2]="";y[3];y[4]="foo"
+    yy[0]=2;yy[1]=9;yy[2]="";yy[3];yy[4]="foo"
+    @dprint("* array_copy(y, yyy)")
+    arrlib::copy(y, yyy)
+    testing::assert_true(arrlib::equals(yyy, yy), 1, "> arrlib::equals(yyy, yy) [flat]")
+
+
     @dprint("* array_copy(arr, b)")
     arrlib::copy(arr, b)
     testing::assert_true(arrlib::equals(arr, b), 1, "> arrlib::equals(arr, b)")
@@ -533,15 +557,20 @@ BEGIN {
     arr2["foo"] = 1
     testing::assert_true(arrlib::equals(arr1,arr2), 1, "> equals(arr1, arr2)")
 
-    #XXX fatal: testing::assert_false(arrlib::equals(arr1,1), 1, "> ! equals(arr1, arr2) [arr2 deleted too]")
-    #XXX fatal: testing::assert_false(arrlib::equals(1, arr1), 1, "> ! equals(arr1, arr2) [arr2 deleted too]")
-    # then check arr1 not messed up
-    #testing::assert_true(arrlib::equals(arr1,arr2), 1, "> equals(arr1, arr2)")
-    #XXX fatal: testing::assert_false(arrlib::equals(1,1), 1, "> ! equals(arr1, arr2) [arr2 deleted too]")
+    cmd = sprintf("%s -i arrlib 'BEGIN { a[0];a[1]; arrlib::equals(a,1) }'", ARGV[0])
+    testing::assert_false(awkpot::exec_command(cmd), 1, "> equals: wrong 2nd arg (scalar)")
+    cmd = sprintf("%s -i arrlib 'BEGIN { a[0]=4;a[1]=9; arrlib::equals(1,a) }'", ARGV[0])
+    testing::assert_false(awkpot::exec_command(cmd), 1, "> _cmp_elements: wrong 1st arg (scalar)")
+    testing::assert_true(arrlib::equals(arr1,arr2), 1, "> equals(arr1, arr2)")
 
     delete arr1
     testing::assert_false(arrlib::equals(arr1,arr2), 1, "> ! equals(arr1, arr2) [arr1 deleted]")
     delete arr2
+    testing::assert_true(arrlib::equals(arr1,arr2), 1, "> equals(arr1, arr2) [arr2 deleted too]")
+
+    # tesing with unassigned/untyped variables (become empty arrays)
+    cmd = sprintf("%s -i arrlib 'BEGIN { arrlib::equals(aa,a) }'", ARGV[0])
+    testing::assert_true(awkpot::exec_command(cmd), 1, "> _cmp_elements: wrong args (unassigned/untyped)")
 
     # TEST empty
     testing::assert_false(arrlib::is_empty(b), 1, "> ! arrlib::is_empty(b)")
