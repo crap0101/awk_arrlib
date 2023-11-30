@@ -622,7 +622,6 @@ BEGIN {
     testing::assert_equal(bb_str, bc_str, 1, "> (sprintf) bb == bc")
     awkpot::set_sort_order(_prev_order)
 
-    #print "* bc:";arrlib::printa(bc)
     testing::assert_true(arrlib::equals(bb, bc), 1, "> arrlib::equals(bb, bc)")
     delete bb[18][19] # for testing remove_empty()
 
@@ -634,35 +633,73 @@ BEGIN {
     testing::assert_not_equal(ba_len, arrlib::deep_length(bb), 1, "> (len) ba != (len) bb)")
     @dprint(sprintf("* (length) ba: %d, bb: %d", arrlib::deep_length(ba), arrlib::deep_length(bb)))
 
+
+    delete ___b
+    ___b[5]
+    ___b[2][3][4][1] = "4th_1"
+    ___b[2][3][4][0] = "4th_0"
+    ___b[1] = 1
+    ___b["spam"][1][3] = "s1-3"
+    ___b["spam"][1][2] = "s1-2"
+    ___b["spam"][1][0] = "s1-0"
+    ___b["foo"][2] = "foo2"
+    ___b["foo"][1] = "foo1"
+    ___b["foo"][3]
+    ___b[0] = 0
+
+    @dprint("* ___b:") && arrlib::printa(___b)
+    @dprint("* delete bb")
+    delete bb
+    delete bc
+    @dprint("* arrlib::copy(___b, bb)")
+    arrlib::copy(___b,bb)
+    @dprint("* arrlib::copy(bb, bc)")
+    arrlib::copy(bb,bc)
+    testing::assert_true(arrlib::equals(___b, bb), 1, "> arrlib::equals(___b, bb) [after copy]")
+    testing::assert_true(arrlib::equals(___b, bc), 1, "> arrlib::equals(___b, bc) [after copy]")
+
+    @dprint("* bb:") && arrlib::printa(bb)
+    testing::assert_true(arrlib::equals(___b, bb), 1, "> arrlib::equals(___b, bb) [after printa]")
+    testing::assert_true(arrlib::equals(___b, bc), 1, "> arrlib::equals(___b, bc) [after printa]")
+
+    ___b_len = arrlib::deep_length(___b)
+    bb_len = arrlib::deep_length(bb)
+
     @dprint("* remove unassigned elements from bb")
     arrlib::remove_unassigned_untyped(bb) # now unassigned/untyped elements are removed
+    @dprint("* bb:") && arrlib::printa(bb)
 
     _prev_order = awkpot::set_sort_order("@ind_num_desc")
-    @dprint("* ba:") && arrlib::printa(ba)
+    @dprint("* ___b:") && arrlib::printa(___b)
     @dprint("* bb:") && arrlib::printa(bb)
     @dprint("* bc:") && arrlib::printa(bb)
+
     # NOTE_1: at this time (2023-11-18), on gawk 5.3.0 (but also, at least, down to 5.2.2)
     # unassigned values becomes string...
     # see https://lists.gnu.org/archive/html/bug-gawk/2023-11/msg00012.html
     # UPDATE: since this is a normal behaviour, arrlib has been updated to not mess up
     # with original values (I hope), so these test should be now consistent across many
     # gawk versions (at least from 5.1.0 fo 5.3.0).
+    testing::assert_true(arrlib::equals(___b, bc), 1, "> arrlib::equals(___b, bc)")
+    testing::assert_false(arrlib::equals(___b, bb), 1, "> ! arrlib::equals(___b, bb)")
     testing::assert_false(arrlib::equals(bb, bc), 1, "> ! arrlib::equals(bc, bb)")
 
-    @dprint("* arrlib::remove_unassigned_untyped(bc)")
-    arrlib::remove_unassigned_untyped(bc) # remove unassigned/untyped from bc too
-    testing::assert_true(arrlib::equals(bb, bc), 1, "> arrlib::equals(bc, bb)")
+    @dprint("* arrlib::remove_unassigned_untyped(___b)")
+    arrlib::remove_unassigned_untyped(___b) # remove unassigned/untyped from ___b too
+    testing::assert_true(arrlib::equals(bb, ___b), 1, "> arrlib::equals(bb, ___b)")
+    testing::assert_false(arrlib::equals(___b, bc), 1, "> ! arrlib::equals(___b, bc)")
 
     # See above NOTE_1 ...
-    testing::assert_equal(ba_len, arrlib::deep_length(bb), 1, "> (len) ba == (len) bb")
-    @dprint(sprintf("* (length) ba: %d, bb: %d", arrlib::deep_length(ba), arrlib::deep_length(bb)))
+    testing::assert_not_equal(arrlib::deep_length(___b), ___b_len, 1, "> (len) ___b != __b_len")
+    testing::assert_equal(arrlib::deep_length(___b), arrlib::deep_length(bb), 1, "> (len) ___b == (len) bb")
+    @dprint(sprintf("* (length) ___b: %d, bb: %d", arrlib::deep_length(___b), arrlib::deep_length(bb)))
     # See above NOTE_1 ...
-    testing::assert_equal(arrlib::sprintfa(bb), arrlib::sprintfa(ba), 1, "> (sprintf) bb == ba")
+    testing::assert_equal(arrlib::sprintfa(bb), arrlib::sprintfa(___b), 1, "> (sprintf) bb == ___b")
     awkpot::set_sort_order(_prev_order)
 
     # See above NOTE_1 ...
     testing::assert_false(("eggs" in bb), 1, "> ! (\"eggs\" in bb)")
-    testing::assert_true(arrlib::equals(ba, bb), 1, "> arrlib::equals(ba, bb)")
+    testing::assert_true(arrlib::equals(___b, bb), 1, "> arrlib::equals(___b, bb)")
 
     delete bd
     @dprint("* arrlib::copy(bb, bd)")

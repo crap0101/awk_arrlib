@@ -55,10 +55,11 @@ function remove_unassigned_untyped(arr,    idx, i, tmp) {
     # Removes unassigned *and* untyped values from $arr.
     # NOTE: uses recursion.
     # COMPATIBILY_NOTE: due to a change in beaviour from (at least) gawk 5.2.2,
-    # some previously untyped array elements
-    # become string when accessing them, i.e. after a printf("%s", arr[idx]) 
+    # some previously untyped array elements become string when accessing them,
+    # i.e. after a printf("%s", arr[idx]) 
     # see https://lists.gnu.org/archive/html/bug-gawk/2023-11/msg00012.html
     # also see NOTE_1 in test/arrlib_test.awk
+    # Anyway, this should be handled correctly by the library.
     for (idx in arr) {
 	if (awk::isarray(arr[idx]))
 	    remove_unassigned_untyped(arr[idx])
@@ -66,12 +67,13 @@ function remove_unassigned_untyped(arr,    idx, i, tmp) {
 	else if (check_untyped_unassigned(arr[idx]))
 	    delete arr[idx]
     }
+    # see NOTE_E
     # remove possibly empty arrays after removal of unassigned values
-    for (idx in arr) {
-	if (awk::isarray(arr[idx]))
-	    if (is_empty(arr[idx]))
-		delete arr[idx]
-    }
+    # for (idx in arr) {
+    # 	if (awk::isarray(arr[idx]))
+    # 	    if (is_empty(arr[idx]))
+    # 		delete arr[idx]
+    # }
 }
 
 
@@ -376,8 +378,9 @@ function _array_copy_no_rec(source, dest, depth, from,    idx) { #XXX+TODO, no r
     print "=============="
     printa(dest)
     print "=============="
-    #remove_empty(dest)
+    #remove_empty(dest) # see NOTE_E
     return 1
+    # see NOTE_E
     # to remove possibly created empty arrays
     #remove_empty(dest)
 }
@@ -400,7 +403,7 @@ function _array_copy_rec(source, dest, depth, from,    idx) {
 	    }
 	}
     }
-    # NOTE: Makes a call to remove_empty() to remove possibly created
+    # NOTE_E: Makes a call to remove_empty() to remove possibly created
     # empty arrays during the copy/slicing (i.e. deleted arrays),
     # due to the recursion "backwards" subarray population.
     # UPDATE: optionally, not really needed... leave it like this
