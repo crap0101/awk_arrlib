@@ -879,11 +879,14 @@ function exists_record(value, idx_max,    i) {
 
 
 function make_array_record(arr,    i) {
-    # Puts the fields of the current record in arr.
+    # Puts the fields of the current record
+    # in $arr, deleting it first.
+    # Returns the number of elements (NF).
     delete arr
     for (i = 1; i <= NF; i++) {
         arr[i] = $i
     }
+    return NF
 }
 
 
