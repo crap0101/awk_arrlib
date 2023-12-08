@@ -80,29 +80,6 @@ BEGIN {
     bg["D"]["E"]["F"][1] = "DEF_1"
 
     testing::start_test_report()
-
-    # TEST check_untyped_unassigned
-    delete bf
-    split("1", bf, ":")
-    bf[0] = -1
-    bf[2] = "foo" 
-    bf[3] = ""
-    bf[4] = @/re/ 
-    bf[5] = 11.2
-    bf[6][7]
-    bf[7] = 2e9
-    for (i in bf) 
-	testing::assert_false(arrlib::check_untyped_unassigned(bf[i]),
-			      1, sprintf("> ! check_untyped_unassigned bf[%s]", i))
-    bf[8]
-    testing::assert_true(arrlib::check_untyped_unassigned(bf[8]),
-			  1, "> check_untyped_unassigned bf[8]")
-    testing::assert_true(arrlib::check_untyped_unassigned(unassigned_or_untyped_scalar),
-			  1, "> check_untyped_unassigned unassigned_or_untyped_scalar")
-    testing::assert_true(arrlib::check_untyped_unassigned(also_and_array_one[8]),
-			  1, "> check_untyped_unassigned also_and_array_one[8]")
-
-    delete bf
     
     # TEST arrlib::copy && sorting order
     y[1][2] = "foo"

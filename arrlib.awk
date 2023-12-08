@@ -36,12 +36,6 @@ function _check_equals(a, b) {
 }
 
 
-function check_untyped_unassigned(x) {
-    # Returns true if $x is either unassigned or untyped, false otherwise.
-    return ((awk::typeof(x) == "unassigned") || (awk::typeof(x) == "untyped"))
-}
-
-
 function force_array(arr, idx) {
     # To persuade arr[idx] to be an array.
     # Come on boy! you can do it!
@@ -79,7 +73,7 @@ function remove_unassigned_untyped(arr,    idx, i, tmp) {
 	if (awk::isarray(arr[idx]))
 	    remove_unassigned_untyped(arr[idx])
         # double check for gawk verion < 5.2
-	else if (check_untyped_unassigned(arr[idx]))
+	else if (! awkpot::check_assigned(arr[idx]))
 	    delete arr[idx]
     }
     # see NOTE_E
@@ -112,7 +106,7 @@ function _arr_print_rec(arr, outfile, depth, from,    fmt, _fmt, i) {
         }
         else {
 	    if (from <= 0) {
-		if (check_untyped_unassigned(arr[i]))
+		if (! awkpot::check_assigned(arr[i]))
 		    printf("arr%s[%s] = %s\n", fmt, i, "") >> outfile
 		else
 		    printf("arr%s[%s] = %s\n", fmt, i, arr[i]) >> outfile
@@ -139,7 +133,7 @@ function _arr_sprintf_rec(arr, depth, from,    fmt, _fmt, i, out) {
         }
         else {
 	    if (from <= 0) {
-		if (check_untyped_unassigned(arr[i]))
+		if (! awkpot::check_assigned(arr[i]))
 		    out = out sprintf("arr%s[%s] = %s\n", fmt, i, "")
 		else
 		    out = out sprintf("arr%s[%s] = %s\n", fmt, i, arr[i])
@@ -234,7 +228,7 @@ function _print_vals_rec(arr, outfile, depth, from,    idx) {
 	    _print_vals_rec(arr[idx], outfile, depth-1, from-1)
 	else
 	    if (from <= 0) {
-		if (check_untyped_unassigned(arr[idx]))
+		if (! awkpot::check_assigned(arr[idx]))
 		    printf("%s\n", "") >> outfile
 		else
 		    printf("%s\n", arr[idx]) >> outfile
