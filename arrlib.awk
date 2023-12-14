@@ -31,7 +31,7 @@
 
 function _check_equals(a, b) {
     # fake check
-    printf("ERROR: function check_equals not set!\n") > "/dev/stderr"
+    printf("ERROR: function check_equals not set!\n") >> STDERR
     exit(1)
 }
 
@@ -360,7 +360,7 @@ function _cmp_elements(arr, f, cmpf, depth, from, what,    __dest) {
     else if (what == "i")
 	get_idxs(arr, __dest, depth, from)
     else {
-	printf("Error: _cmp_elements: unknown 'what' arg: <%s>\n", what) > "/dev/stderr"
+	printf("Error: _cmp_elements: unknown 'what' arg: <%s>\n", what) >> STDERR
 	exit(1)
     }
     return _cmp_val_rec(__dest, f, cmpf, depth, from)
@@ -979,6 +979,7 @@ function popitem(arr, idx, dest, todel) {
 
 
 BEGIN {
+    STDERR = "/dev/stderr"
     if (awk::ARRLIB_DEBUG) {
 	dprint = "awkpot::dprint_real"
 	# set dprint in awkpot functions also (defaults to dprint_fake)
