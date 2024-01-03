@@ -366,33 +366,6 @@ function _cmp_elements(arr, f, cmpf, depth, from, what,    __dest) {
     return _cmp_val_rec(__dest, f, cmpf, depth, from)
 }
 
-function _array_copy_no_rec(source, dest, depth, from,    idx) { #XXX+TODO, no rec, pop()
-    # Private function to make a copy of the
-    # (possibly nested) $source array in the $dest array
-    # from the $from level until the  $depth level of subarrays.
-    # The very level of $arr is at depth 0.
-
-    if (depth == 0) {
-	return 0
-    }
-    for (idx in source) {
-	if (from <= 0) {
-	    if (awk::isarray(source[idx])) {
-		force_array(dest, idx)
-		_array_copy_rec(source[idx], dest[idx], depth-1, from-1)
-	    } else
-		dest[idx] = source[idx]
-	}
-    }
-    print "=============="
-    printa(dest)
-    print "=============="
-    #remove_empty(dest) # see NOTE_E
-    return 1
-    # see NOTE_E
-    # to remove possibly created empty arrays
-    #remove_empty(dest)
-}
 
 function _array_copy_rec(source, dest, depth, from,    idx) {
     # Private function to make a copy of the
@@ -941,7 +914,7 @@ function pop(arr, dest, todel,    idx, val) {
     # Fills $dest array with the index and the value using the
     # <push> function.
     # If $todel is true, delete $dest before adding the pair.
-    # Returns false if there are no more elements in $arr, else true.
+    # Returns false if there are no elements to pop, else true.
     if (is_empty(arr)) {
 	@dprint("pop: source array is empty")
 	return 0
@@ -958,8 +931,8 @@ function pop(arr, dest, todel,    idx, val) {
 
 function popitem(arr, idx, dest, todel) {
     # Removes $arr[$idx] and <push> it into $dest,
-    # deleting the latter if $todel is true.
-    # Returns false if there are no more elements in $arr, or
+    # first deleting the latter if $todel is true.
+    # Returns false if there are no elements to pop or
     # if $idx is not an $arr index, else true.
     if (is_empty(arr)) {
 	@dprint("popitem: source array is empty")
