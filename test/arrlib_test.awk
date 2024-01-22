@@ -387,13 +387,56 @@ BEGIN {
     testing::assert_false(arrlib::exists_index_deep(arr, "bar"), 1, "arrlib::exists_index_deep(arr, \"bar\")")
     @dprint("* set $1 = \"m\"; $2 = \"ll\"; $3 = \"?\"; $4 = 5; $5 = 99")
 
-    # TEST arrlib::make_records && arrlib::exists_record
+    # TEST arrlib::make_array_records && arrlib::exists_record
     $1 = "m"; $2 = "ll"; $3 = "?"; $4 = 5; $5 = 99
     testing::assert_false(arrlib::exists_record("?", 2), 1, "! exists_record(\"?\", 2)")
     testing::assert_true(arrlib::exists_record("?", 3), 1, "exists_record(\"?\", 3)")
     testing::assert_true(arrlib::exists_record("?", 11), 1, "exists_record(\"?\", 11)")
     testing::assert_false(arrlib::exists_record("not_existent", 11), 1, "! exists_record(\"not_existent\", 11)")
     testing::assert_true(arrlib::exists_record(5, 4), 1, "exists_record(5, 4)")
+    # make_array_recors
+    @dprint("* make_array_record(__arr_r, 2)")
+    delete __arr_r
+    n = arrlib::make_array_record(__arr_r, 2)
+    @dprint("* __arr_r:") && arrlib::printa(__arr_r)
+    testing::assert_equal(arrlib::array_length(__arr_r), 4, 1, "array_length(__arr_r) == 4")
+    testing::assert_equal(n, 4, 1, "make_array_record [return val] == 4")
+
+    @dprint("* make_array_record(__arr_r, 2, 5)")
+    delete __arr_r
+	    n = arrlib::make_array_record(__arr_r, 2, 5)
+    @dprint("* __arr_r:") && arrlib::printa(__arr_r)
+    testing::assert_equal(arrlib::array_length(__arr_r), 4, 1, "array_length(__arr_r) == 4")
+    testing::assert_equal(n, 4, 1, "make_array_record [return val] == 4")
+
+    @dprint("* make_array_record(__arr_r, 2, 8)")
+    delete __arr_r
+	    n = arrlib::make_array_record(__arr_r, 2, 8)
+    @dprint("* __arr_r:") && arrlib::printa(__arr_r)
+    testing::assert_equal(arrlib::array_length(__arr_r), 4, 1, "array_length(__arr_r) == 4")
+    testing::assert_equal(n, 4, 1, "make_array_record [return val] == 4")
+
+    @dprint("* make_array_record(__arr_r, 2, -1)")
+    delete __arr_r
+	    n = arrlib::make_array_record(__arr_r, 2, -1)
+    @dprint("* __arr_r:") && arrlib::printa(__arr_r)
+    testing::assert_equal(arrlib::array_length(__arr_r), 4, 1, "array_length(__arr_r) == 4")
+    testing::assert_equal(n, 4, 1, "make_array_record [return val] == 4")
+
+    @dprint("* make_array_record(__arr_r, -1, -1)")
+    delete __arr_r
+	    n = arrlib::make_array_record(__arr_r, -1, -1)
+    @dprint("* __arr_r:") && arrlib::printa(__arr_r)
+    testing::assert_equal(arrlib::array_length(__arr_r), 5, 1, "array_length(__arr_r) == 5")
+    testing::assert_equal(n, 5, 1, "make_array_record [return val] == 5")
+
+    @dprint("* make_array_record(__arr_r, 3, 4)")
+    delete __arr_r
+	    n = arrlib::make_array_record(__arr_r, 3, 4)
+    @dprint("* __arr_r:") && arrlib::printa(__arr_r)
+    testing::assert_equal(arrlib::array_length(__arr_r), 2, 1, "array_length(__arr_r) == 2")
+    testing::assert_equal(n, 2, 1, "make_array_record [return val] == 2")
+
     @dprint("* make_array_record(b)")
     n = arrlib::make_array_record(b)
     @dprint("* b:") && arrlib::printa(b)

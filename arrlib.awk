@@ -845,15 +845,24 @@ function exists_record(value, idx_max,    i) {
 }
 
 
-function make_array_record(arr,    i) {
+function make_array_record(arr, start, end,    i) {
     # Puts the fields of the current record
     # in $arr, deleting it first.
-    # Returns the number of elements (NF).
+    # The optional $start parameter is the record's index to starts
+    # from (default: 1). Values less than 1 are treated like 1.
+    # The optional $end parameter is the record's last index
+    # to get, (default: NF). Values less than 1 are treated like NF.
+    # Returns the number of elements.
     delete arr
-    for (i = 1; i <= NF; i++) {
+    if (start <= 0)
+	start = 1
+    if (end <= 0)
+	end = NF
+    end = (end > NF) ? NF : end
+    for (i = start; i <= end; i++) {
         arr[i] = $i
     }
-    return NF
+    return array_length(arr)
 }
 
 
