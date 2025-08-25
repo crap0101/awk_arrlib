@@ -23,7 +23,7 @@
 @namespace "arrlib"
 
 # XXX+TODO deep_push/deep_pop ?
-# XXX+TODO: no _rec functions...find a way
+# XXX+TODO: no _rec functions...find a way (UPDATE: no way in pure awk :( ...as per the standard)
 
 #####################
 # UTILITY FUNCTIONS #
